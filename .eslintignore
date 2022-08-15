@@ -1,0 +1,8 @@
+# system file/folder
+node_modules/
+
+# auto generated files
+app/
+
+# misc
+jsdoc/

@@ -1,0 +1,19 @@
+"use strict";
+
+/**
+ * @file index.js <Brief description>
+ * @author <author_name>
+ * @date <dd-mm-yyyy>
+ */
+
+import { CSUnit } from "../../../src/libs/index.js";
+import { __{{module}}__TestSuite } from './__{{module}}__.test.js';
+
+// add test suite
+CSUnit.Test.suite({
+  label: "__{{label}}__ Test Suite",
+  method: __{{module}}__TestSuite,
+});
+
+// load test-ui
+CSUnit.Test.load();

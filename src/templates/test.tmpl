@@ -1,0 +1,31 @@
+"use strict";
+
+import { CSUnit } from "../../../src/libs/index.js";
+
+function __{{module}}__Tests() {
+  QUnit.module("__{{label}}__", hooks => {
+
+    // Prerequisite hook
+    hooks.before(async assert => {
+      
+    });
+
+    // Sub-module
+    QUnit.module( "__{{label}}__-sub-module", hooks => {
+      
+      // Sub-module tests
+      QUnit.test("__{{label}}__-sub-module test", assert => {
+        assert.ok(true, 'Hello from __{{label}}__ test case');
+      });
+    });
+  });
+}
+
+/***********************************************************
+*               Method for Test Suite
+***********************************************************/
+function __{{module}}__TestSuite() {
+  __{{module}}__Tests();
+}
+
+export { __{{module}}__TestSuite };
