@@ -3,6 +3,7 @@
 export type SetupInputs = {
   hostname: string;
   projectPath: string;
+  localLibsPath: string;
   copyX86e: boolean;
 };
 
@@ -13,5 +14,6 @@ export type ExportInput = {
 
 export type ImportInput = {
   source: string;
+  projectPath: string;
   copyX86e: boolean;
 };

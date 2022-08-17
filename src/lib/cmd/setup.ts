@@ -58,6 +58,21 @@ function ask(): Promise<any> {
       }
     },
     {
+      type: "input",
+      name: "remote_lacalLibspath",
+      message: "Path to local libraries in remote host",
+      validate(value: string) {
+        if (value.length > 0) {
+          // check valid folder path
+          if (Utils.FilesystemStream.validate(value)) return true;
+          return "Please enter valid path to local libraries in remote host";
+        }
+
+        // TODO: how to verify proper hostname
+        return "Please enter path to local libraries in remote host";
+      }
+    },
+    {
       type: "confirm",
       name: "copyX86e",
       message: "Want to copy x86e_win64?",
@@ -67,17 +82,6 @@ function ask(): Promise<any> {
 
   return (inquirer.prompt(questions));
 }
-
-// const api = (input: SetupInputs):Promise<string> => (new Promise((resolve, reject) => {
-//   const errors = validateOption(input);
-//   if (errors.length > 0) {
-//     reject(new UsageError(`${errors.join("\n")}`));
-//     return;
-//   }
-
-//   Utils.display(input);
-//   resolve("In-progress");
-// }));
 
 const api = (input: SetupInputs): Promise<string> => {
   const errors = validateOption(input);
@@ -99,6 +103,7 @@ const cli = (/* option: any */): Promise<string> => (new Promise((resolve, rejec
     const input = {
       hostname: answers.remote_host,
       projectPath: answers.remote_projectpath,
+      localLibsPath: answers.remote_lacalLibspath,
       copyX86e: answers.copyX86e
     };
 

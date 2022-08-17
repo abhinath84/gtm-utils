@@ -36,6 +36,21 @@ function ask(): Promise<any> {
       }
     },
     {
+      type: "input",
+      name: "projectPath",
+      message: "Path for projects",
+      validate(value: string) {
+        if (value.length > 0) {
+          // check valid folder path
+          if (Utils.FilesystemStream.validate(value)) return true;
+          return "Please enter valid path for projects";
+        }
+
+        // TODO: how to verify proper hostname
+        return "Please enter path for projects";
+      }
+    },
+    {
       type: "confirm",
       name: "copyX86e",
       message: "Want to copy x86e_win64?",
@@ -64,7 +79,7 @@ const cli = (): Promise<string> => (
 
       // call 'run' api.
       return (
-        api({ source: answers.source, copyX86e: answers.copyX86e })
+        api({ source: answers.source, projectPath: answers.projectPath, copyX86e: answers.copyX86e })
           .then((response) => {
             Utils.display(response);
             return (Promise.resolve(response));

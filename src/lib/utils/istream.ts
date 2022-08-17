@@ -4,18 +4,22 @@ import fs from "fs";
 import * as fsp from "fs/promises";
 import readline from "readline";
 
+export interface ReadFileMiddleware {
+  (content: string): void;
+}
+
 export interface ReadLineMiddleware {
   (content: string, lineno: number): void;
 }
 
 export class Stream {
-  // private mFilename: string;
-
-  private mLineno: number;
-
-  constructor(filename: string) {
-    // this.mFilename = filename;
-    this.mLineno = 0;
+  static readFile(filename: string, middleware: ReadFileMiddleware): Promise<void> {
+    return (fsp.readFile(filename, { encoding: "utf-8" })
+      .then((content: string) => {
+        middleware(content);
+        Promise.resolve();
+      })
+    );
   }
 
   static readLine(filename: string, middleware: ReadLineMiddleware): Promise<void> {

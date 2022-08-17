@@ -26,6 +26,7 @@ function accessible(dir: string, mode: number) {
       accessSync(dir, mode);
       state = true;
     } catch (err) {
+      console.log(err);
       state = false;
     }
   }
@@ -35,9 +36,9 @@ function accessible(dir: string, mode: number) {
 
 const FilesystemStream = {
   exists(fileOrDir: string): boolean {
-    let state = false;
+    const state = false;
 
-    return(state);
+    return (state);
   },
   writable(sharedPath: string): boolean {
     return (accessible(sharedPath, constants.W_OK));

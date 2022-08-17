@@ -1,109 +1,59 @@
 "use strict";
 import path from "path";
-// import * as fs{ existsSync, copyFileSync, mkdirSync, constants } from "fs";
 import * as fs from "fs";
 import * as fsp from "fs/promises";
 import os from "os";
-import { Stream } from "../utils/istream.js";
+import { GTMStream } from "./gtmstream.js";
 import { Utils } from "../utils/utility.js";
 import { UsageError } from "../core/errors.js";
 const GTMRELATEDFILES = [
     ".gtconfig",
+    ".gtconfig.json",
     ".gtprj",
     ".gt_open_prj_flt",
     ".gt_proj_flt",
-    ".gtconfig.json",
     ".gtdeftags",
     ".gtdeftgts",
     ".gtlntfilt",
     ".gtm_cshrc",
-    ".gtmrun",
     ".gtprj_types"
 ];
-function cp(sourceFile, destinationFile) {
-    return (fsp.copyFile(sourceFile, destinationFile)
-        .then(() => Promise.resolve(true))
-        .catch(() => Promise.resolve(true)));
-}
-function copyFile(sourceFile, destinationFile) {
-    const destination = path.dirname(destinationFile);
-    // check destination folder exists or not
-    return (fsp.stat(destination)
-        .then(( /* stats */) => (cp(sourceFile, destinationFile)))
-        .catch(( /* err */) => {
-        // if not create it(recursively)
-        // paste file to destination folder.
-        const promise = fsp.mkdir(destination, { recursive: true });
-        return (promise.then(( /* response */) => (cp(sourceFile, destinationFile))));
-    }));
-}
-function cpFileSync(sourceFile, destinationFile) {
-    const dest = path.dirname(destinationFile);
-    if (!fs.existsSync(dest)) {
-        fs.mkdirSync(dest, { recursive: true });
-    }
-    fs.copyFileSync(sourceFile, destinationFile);
-}
-function copyRecursivelySync(source, destination) {
-    // read current directory & loop over it's items
-    const items = fs.readdirSync(source, { withFileTypes: true });
-    items.forEach((item) => {
-        const sourceItem = path.join(source, item.name);
-        const destItem = path.join(destination, item.name);
-        // if file then copy/paste
-        if (item.isFile()) {
-            return (cpFileSync(sourceItem, destItem));
-        }
-        if (item.isDirectory()) {
-            return (copyRecursivelySync(sourceItem, destItem));
-        }
-    });
-}
-function copyProjectSync(project, destination, shouldCopyX86e) {
-    if ((project.length > 0) && (destination.length > 0)) {
-        // copy each sub-dir except x86e if it's false
-        const items = fs.readdirSync(project, { withFileTypes: true });
-        items.forEach((item) => {
-            const src = path.join(project, item.name);
-            const dest = path.join(destination, item.name);
-            if (item.isFile()) {
-                cpFileSync(src, dest);
-            }
-            else if (item.isDirectory()) {
-                // check for x86e
-                // eslint-disable-next-line no-lonely-if
-                if ((item.name !== "x86e_win64") || ((item.name === "x86e_win64") && shouldCopyX86e)) {
-                    copyRecursivelySync(src, dest);
-                }
-            }
-        });
-    }
-}
 export class GTMSimulator {
     constructor() {
         this.mGTMInfos = [];
-        this.mHome = process.env.HOME || "";
+        // this.mHome = process.env.HOME || "";
+        this.mProjectsPath = "";
+        this.mLocalLibsPath = "";
+        this.mHomeReadPath = "";
+        this.mHomeWritePath = "";
         this.mCopyErrors = [];
         this.init();
     }
-    setup(input) {
-        // Utils.display(input);
-        const promises = [
-            this.readConfigFile(),
-            this.readProjectFile()
-        ];
-        // Utils.display(this.mCopyErrors);
-        return (Promise.all(promises).then(() => {
-            const hostname = os.hostname();
-            // get machine name from 'os' module
-            // return (this.copyProjects(hostname, "D:\\Pool\\gtm_utils", input.copyX86e)
-            //   .then(() => Promise.resolve("In-process")));
-            return (this.copyProjects(hostname, "D:\\Pool\\gtm_utils", input.copyX86e)
-                .then(() => {
-                Utils.display(this.mCopyErrors);
-                return (Promise.resolve("In-process"));
-            }));
-        }));
+    async setup(input) {
+        // TODO: validate input's access.
+        if (process.env.HOME === undefined || process.env.HOME.length <= 0) {
+            throw new UsageError("local HOME environment variable is not set.");
+        }
+        if (!Utils.FilesystemStream.writable(`\\\\${input.hostname}\\HOME`)) {
+            throw new UsageError(`${`\\\\${input.hostname}\\HOME`} doesn't have write permission.`);
+        }
+        this.mHomeReadPath = process.env.HOME;
+        this.mHomeWritePath = `\\\\${input.hostname}\\HOME`;
+        this.mProjectsPath = input.projectPath;
+        this.mLocalLibsPath = input.localLibsPath;
+        // read from local home directory
+        await this.readFromHome();
+        Utils.display("\n");
+        // copy projects
+        const localProjectsPath = `\\\\${os.hostname()}\\projects`;
+        const remoteProjectsPath = `\\\\${input.hostname}\\projects`;
+        const projects = this.find(".gtconfig")?.content?.projects.split(" ");
+        await this.copy(localProjectsPath, remoteProjectsPath, projects, { copyX86e: input.copyX86e });
+        Utils.display("");
+        // write to remote home directory
+        await this.writeToHome();
+        Utils.display("");
+        return (Promise.resolve(`Setup UIGTM is Completed on ${input.hostname}!`));
     }
     // export(input: ExportInput) {
     // }
@@ -111,10 +61,6 @@ export class GTMSimulator {
     // }
     init() {
         GTMRELATEDFILES.forEach((file) => this.mGTMInfos.push({ filename: file, content: {} }));
-    }
-    resolve(filename) {
-        const resolvedPath = (filename.length > 0) ? path.resolve(this.mHome, filename) : "";
-        return (resolvedPath);
     }
     find(filename) {
         return (this.mGTMInfos.find((elem) => (elem.filename === filename)));
@@ -128,97 +74,306 @@ export class GTMSimulator {
             this.mGTMInfos.push(data);
         }
     }
+    resolveReadHome(filename) {
+        if (this.mHomeReadPath) {
+            const resolvedPath = (filename.length > 0) ? path.resolve(this.mHomeReadPath, filename) : "";
+            return (resolvedPath);
+        }
+        throw new UsageError("Local 'HOME' environment variable is missing!");
+    }
+    resolveWriteHome(filename) {
+        if (this.mHomeWritePath) {
+            const resolvedPath = (filename.length > 0) ? path.resolve(this.mHomeWritePath, filename) : "";
+            return (resolvedPath);
+        }
+        throw new UsageError("Remote 'HOME' environment variable is missing!");
+    }
+    readFromHome() {
+        Utils.display("Reading from local HOME directory ...");
+        const promises = [
+            this.readConfigFile(),
+            this.readConfigJsonFile(),
+            this.readProjectFile(),
+            this.readOpenPrjFlt(),
+            this.readPrjFlt(),
+            this.readDefTags(),
+            this.readDeftgts(),
+            this.readLntfilt(),
+            this.readCshrc(),
+            this.readPrjTypes()
+        ];
+        return (Promise.all(promises).then(() => Promise.resolve()));
+    }
     readConfigFile() {
         const filename = ".gtconfig";
-        const configPath = this.resolve(filename);
-        // const stream = new Stream(configPath);
-        const obj = {};
-        const configMiddleware = (content, lineno) => {
-            // Utils.display(`Line ${lineno} : ${content}`);
-            switch (lineno) {
-                case 1:
-                    obj.win_pref = content;
-                    break;
-                case 2:
-                    obj.editor_theme = content;
-                    break;
-                case 3:
-                    obj.projects = content;
-                    break;
-                case 5:
-                    obj.local_libs = content;
-                    break;
-                case 6:
-                    obj.ref_sys = content;
-                    break;
-                case 8:
-                    obj.user_initial = content;
-                    break;
-                case 9:
-                    obj.user_full_name = content;
-                    break;
-                case 10:
-                    obj.project_path = content;
-                    break;
-                case 12:
-                    obj.file_diff = content;
-                    break;
-                case 15:
-                    obj.zero = content;
-                    break;
-                default:
-                // do nothing
+        const projectsPath = this.mProjectsPath;
+        const localLibsPath = this.mLocalLibsPath;
+        const middleware = {
+            content: {},
+            type: "line",
+            method(content, lineno) {
+                // Utils.display(`Line ${lineno} : ${content}`);
+                switch (lineno) {
+                    case 1:
+                        this.content.win_pref = content;
+                        break;
+                    case 2:
+                        this.content.editor_theme = content;
+                        break;
+                    case 3:
+                        this.content.projects = content;
+                        break;
+                    case 5:
+                        this.content.local_libs = localLibsPath;
+                        break;
+                    case 6:
+                        this.content.ref_sys = content;
+                        break;
+                    case 8:
+                        this.content.user_initial = content;
+                        break;
+                    case 9:
+                        this.content.user_full_name = content;
+                        break;
+                    case 10:
+                        this.content.project_path = projectsPath;
+                        break;
+                    case 12:
+                        this.content.file_diff = content;
+                        break;
+                    case 15:
+                        this.content.zero = content;
+                        break;
+                    default:
+                    // do nothing
+                }
             }
         };
-        Utils.display(`Reading ${configPath} ...`);
-        return (Stream.readLine(configPath, configMiddleware)
-            .then(() => {
-            this.insert({ filename, content: obj });
-            // Utils.display(this.find(filename)?.content.projects);
-            Promise.resolve();
-        }));
+        const post = () => {
+            this.insert({ filename, content: middleware.content });
+        };
+        const rdObj = {
+            file: this.resolveReadHome(filename),
+            middleware,
+            post
+        };
+        return (GTMStream.read(rdObj));
+    }
+    readConfigJsonFile() {
+        const filename = ".gtconfig.json";
+        const middleware = {
+            content: {},
+            type: "file",
+            method(content) {
+                // Utils.display(lineno);
+                this.content = JSON.parse(content);
+            }
+        };
+        const post = () => {
+            this.insert({ filename, content: middleware.content });
+        };
+        const rdObj = {
+            file: this.resolveReadHome(filename),
+            middleware,
+            post
+        };
+        return (GTMStream.read(rdObj));
     }
     readProjectFile() {
         const filename = ".gtprj";
-        const configPath = this.resolve(filename);
-        const obj = { projects: [] };
-        const configMiddleware = (content, lineno) => {
-            // Utils.display(`Line ${lineno} : ${content}`);
-            if (lineno !== 1)
-                obj.projects.push(content);
+        const baseProjectsPath = this.mProjectsPath.split("\\")[0];
+        const projectsPath = this.mProjectsPath;
+        const middleware = {
+            content: {
+                projects: [],
+            },
+            type: "line",
+            method(content, lineno) {
+                // Utils.display(lineno);
+                if (lineno === 1) {
+                    this.content.projects.push(path.join(baseProjectsPath, "\\"));
+                }
+                else if (content[0] === "/" && content[1] === "/") {
+                    this.content.projects.push(content);
+                }
+                else {
+                    // replace current project path with this.this.mProjectsPath
+                    const project = content.substring(content.lastIndexOf("/") + 1);
+                    const projectPath = path.join(projectsPath, project);
+                    this.content.projects.push(projectPath);
+                }
+            }
         };
-        Utils.display(`Reading ${configPath} ...`);
-        return (Stream.readLine(configPath, configMiddleware)
-            .then(() => {
-            this.insert({ filename, content: obj });
-            // Utils.display(this.find(filename)?.content.projects);
-            Promise.resolve();
-        }));
+        const post = () => {
+            this.insert({ filename, content: middleware.content });
+        };
+        const rdObj = {
+            file: this.resolveReadHome(filename),
+            middleware,
+            post
+        };
+        return (GTMStream.read(rdObj));
     }
-    async copyProjects(hostname, dest, shouldCopyX86e) {
-        if (hostname.length > 0) {
-            // copy each sub-dir except x86e if it's false
-            // const projects = this.find(".gtconfig")?.content?.projects.split(" ");
-            // const projects = ["aim_adv_result_ref","aim_animation","aim_animation_timeline","aim_himanshu","aim_live_dll","aim_maixm","aim_nagnath","aim_pre","aim_pre_dll","aim_pre_xtop","aim_result_animation_bug","aim_result_anti_aliasing","aim_result_anti_aliasing_1","aim_result_asm_issue","aim_result_bassel","aim_result_bug","aim_result_cmd","aim_result_cmd_obsolate","aim_result_collector","aim_result_collector_comb","aim_result_comment","aim_result_console","aim_result_cross_section","aim_result_cross_section_backup","aim_result_cross_section_bug","aim_result_cross_section_clip","aim_result_cross_section_cmd","aim_result_deform","aim_result_display","aim_result_display_bug","aim_result_dll_issue","aim_result_eventloop","aim_result_explode","aim_result_graphics","aim_result_graphics_bug","aim_result_hide","aim_result_legend","aim_result_mainloop","aim_result_mesh","aim_result_mesh_bug","aim_result_min_max","aim_result_mini_toolbar","aim_result_mini_toolbar_new","aim_result_non_graphics","aim_result_p70","aim_result_p72","aim_result_p80","aim_result_plane","aim_result_refactor","aim_result_reg","aim_result_regression","aim_result_render","aim_result_ribbon","aim_result_rmb","aim_result_tareq","aim_result_template","aim_result_tmp","aim_result_universal_collector","aim_result_universal_collector_1","aim_result_view","aim_ribbon_design","aim_ribbon_design_70","aim_rishabh_aux_window","aimpost_p7217"];
-            // projects.forEach(async (elem: string) => {
-            // eslint-disable-next-line no-restricted-syntax
-            // for (const project of projects) {
-            //   const src = `\\\\${hostname}\\projects\\${project}`;
-            //   if (fs.existsSync(src)) {
-            //     // Utils.display(`Copying project: ${src}`);
-            //     // eslint-disable-next-line no-await-in-loop
-            //     await this.copyProject(src, path.join(dest, project), shouldCopyX86e);
-            //     Utils.display(`Copied project: ${src}`);
-            //   }
-            // }
-            const projects = this.find(".gtconfig")?.content?.projects.split(" ");
+    readPrjFlt() {
+        const filename = ".gt_proj_flt";
+        const middleware = {
+            content: {},
+            type: "file",
+            method(content) {
+                // Utils.display(lineno);
+                this.content.data = content;
+            }
+        };
+        const post = () => {
+            this.insert({ filename, content: middleware.content });
+        };
+        const rdObj = {
+            file: this.resolveReadHome(filename),
+            middleware,
+            post
+        };
+        return (GTMStream.read(rdObj));
+    }
+    readOpenPrjFlt() {
+        const filename = ".gt_open_prj_flt";
+        const middleware = {
+            content: {},
+            type: "file",
+            method(content) {
+                // Utils.display(lineno);
+                this.content.data = content;
+            }
+        };
+        const post = () => {
+            this.insert({ filename, content: middleware.content });
+        };
+        const rdObj = {
+            file: this.resolveReadHome(filename),
+            middleware,
+            post
+        };
+        return (GTMStream.read(rdObj));
+    }
+    readDefTags() {
+        const filename = ".gtdeftags";
+        const middleware = {
+            content: {},
+            type: "file",
+            method(content) {
+                // Utils.display(lineno);
+                this.content.data = content;
+            }
+        };
+        const post = () => {
+            this.insert({ filename, content: middleware.content });
+        };
+        const rdObj = {
+            file: this.resolveReadHome(filename),
+            middleware,
+            post
+        };
+        return (GTMStream.read(rdObj));
+    }
+    readDeftgts() {
+        const filename = ".gtdeftgts";
+        const middleware = {
+            content: {},
+            type: "file",
+            method(content) {
+                // Utils.display(lineno);
+                this.content.data = content;
+            }
+        };
+        const post = () => {
+            this.insert({ filename, content: middleware.content });
+        };
+        const rdObj = {
+            file: this.resolveReadHome(filename),
+            middleware,
+            post
+        };
+        return (GTMStream.read(rdObj));
+    }
+    readLntfilt() {
+        const filename = ".gtlntfilt";
+        const middleware = {
+            content: {},
+            type: "file",
+            method(content) {
+                // Utils.display(lineno);
+                this.content.data = content;
+            }
+        };
+        const post = () => {
+            this.insert({ filename, content: middleware.content });
+        };
+        const rdObj = {
+            file: this.resolveReadHome(filename),
+            middleware,
+            post
+        };
+        return (GTMStream.read(rdObj));
+    }
+    readCshrc() {
+        const filename = ".gtm_cshrc";
+        const middleware = {
+            content: {},
+            type: "file",
+            method(content) {
+                // Utils.display(content);
+                this.content.data = content;
+            }
+        };
+        const post = () => {
+            this.insert({ filename, content: middleware.content });
+            // Utils.display(this.find(filename)?.content.data);
+        };
+        const rdObj = {
+            file: this.resolveReadHome(filename),
+            middleware,
+            post
+        };
+        return (GTMStream.read(rdObj));
+    }
+    readPrjTypes() {
+        const filename = ".gtprj_types";
+        const middleware = {
+            content: {},
+            type: "file",
+            method(content) {
+                this.content.data = content;
+            }
+        };
+        const post = () => {
+            this.insert({ filename, content: middleware.content });
+        };
+        const rdObj = {
+            file: this.resolveReadHome(filename),
+            middleware,
+            post
+        };
+        return (GTMStream.read(rdObj));
+    }
+    async copy(source, destination, projects, options) {
+        // validate inputs
+        if (source.length > 0 && destination.length > 0 && projects.length > 0) {
+            // check read/write permission of source & destination
+            if (!Utils.FilesystemStream.readable(source)) {
+                throw new UsageError(`${source} doesn't have read permission.`);
+            }
+            if (!Utils.FilesystemStream.writable(destination)) {
+                throw new UsageError(`${destination} doesn't have write permission.`);
+            }
+            // copy projects
+            Utils.display("Copying projects ...");
             const promises = projects.map((project) => {
                 if (project.length > 0) {
-                    const src = `\\\\${hostname}\\projects\\${project}`;
+                    const src = path.join(source, project);
                     if (fs.existsSync(src)) {
-                        return (this.cpProject(src, path.join(dest, project), shouldCopyX86e)
+                        const dest = path.join(destination, project);
+                        return (this.copyProject(src, dest, options.copyX86e)
                             .then(() => {
-                            Utils.display(`Copied project: ${src}`);
+                            Utils.display(`   Copied: ${dest}`);
                             Promise.resolve();
                         }));
                     }
@@ -226,32 +381,18 @@ export class GTMSimulator {
                 return (Promise.resolve());
             });
             await Promise.all(promises);
-            // const src = `\\\\${hostname}\\projects\\${elem}`;
-            // const prj = path.join(dest, elem);
-            // if (fs.existsSync(src)) {
-            //   if (fs.existsSync(prj)) {
-            //     fs.rmSync(prj, { recursive: true });
-            //   }
-            //   copyProjectSync(src, prj, shouldCopyX86e);
-            //   Utils.display(`Copied project: ${src}`);
-            // }
-            // });
-            // const src = `\\\\${hostname}\\projects\\aim_result_display`;
-            // const prj = path.join(dest, "aim_result_display");
-            // await this.copyProject(src, prj, shouldCopyX86e);
-            // Utils.display(`Copied project: ${src}`);
-            // if (fs.existsSync(prj)) {
-            //   fs.rmSync(prj, { recursive: true });
-            // }
-            // copyProjectSync(src, prj, shouldCopyX86e);
-            // Utils.display(`Copied project: ${src}`);
+            // write copy error to copy.err
+            // this.logError();
+            // Utils.display(this.mCopyErrors);
             return (Promise.resolve());
         }
-        throw new UsageError("Invalid uigtm project directory or destination directory");
+        throw new TypeError("Invalid input to 'GTMSimulator::copy()' method.");
     }
-    async cpProject(project, destination, shouldCopyX86e) {
+    async copyProject(project, destination, copyX86e) {
+        // TODO: filter method should be part of parameter (???)
+        // filter method
         const filter = (file) => {
-            if ((!file.includes("x86e_win64")) || ((file.includes("x86e_win64")) && shouldCopyX86e))
+            if ((!file.includes("x86e_win64")) || ((file.includes("x86e_win64")) && copyX86e))
                 return (true);
             return (false);
         };
@@ -259,85 +400,157 @@ export class GTMSimulator {
         return (Promise.all(items.map((item) => {
             const src = path.join(project, item.name);
             const dest = path.join(destination, item.name);
-            return (fsp.cp(src, dest, { filter, recursive: true })
+            return (fsp.cp(src, dest, { filter, force: true, recursive: true })
                 .then(() => Promise.resolve())
                 .catch((err) => {
+                // TODO: write copy error here (???)
                 this.mCopyErrors.push(err);
                 Promise.resolve();
             }));
         }))
             .then(() => Promise.resolve()));
-        // const filter = (file: string): boolean => {
-        //   if (file.includes("x86e_win64")) return (false);
-        //   return (true);
-        // };
-        // return (fsp.cp(project, destination, { filter, recursive: true }));
     }
-    async copyProject(project, destination, shouldCopyX86e) {
-        if ((project.length > 0) && (destination.length > 0)) {
-            // copy each sub-dir except x86e if it's false
-            const items = await fsp.readdir(project, { withFileTypes: true });
-            // items.forEach(async (item) => {
-            //   const src = path.join(project, item.name);
-            //   const dest = path.join(destination, item.name);
-            //   if (item.isFile()) {
-            //     await copyFile(src, dest);
-            //   } else if (item.isDirectory()) {
-            //     // check for x86e
-            //     // eslint-disable-next-line no-lonely-if
-            //     if ((item.name !== "x86e_win64") || ((item.name === "x86e_win64") && shouldCopyX86e)) {
-            //       await this.copyRecursively(src, dest);
-            //     }
-            //   }
-            // });
-            await Promise.all(items.map(async (item) => {
-                // const src = path.join(project, item.name);
-                // const dest = path.join(destination, item.name);
-                // if (item.isFile()) {
-                //   await copyFile(src, dest);
-                // } else if (item.isDirectory()) {
-                //   // check for x86e
-                //   // eslint-disable-next-line no-lonely-if
-                //   if ((item.name !== "x86e_win64") || ((item.name === "x86e_win64") && shouldCopyX86e)) {
-                //     await this.copyRecursively(src, dest);
-                //   }
-                // }
-                await this.copyProjectSubDir(item, project, destination, shouldCopyX86e);
-            }));
-            return (Promise.resolve());
-        }
-        throw new UsageError("Invalid uigtm project directory or destination directory");
+    writeToHome() {
+        Utils.display("Writing to remote HOME directory ...");
+        const promises = [
+            this.writeConfigFile(),
+            this.writeConfigJsonFile(),
+            this.writeProjectFile(),
+            this.writeOpenPrjFlt(),
+            this.writePrjFlt(),
+            this.writeDefTags(),
+            this.writeDeftgts(),
+            this.writeLntfilt(),
+            this.writeCshrc(),
+            this.writePrjTypes()
+        ];
+        return (Promise.all(promises).then(() => Promise.resolve()));
     }
-    copyProjectSubDir(item, project, destination, copyX86e) {
-        const src = path.join(project, item.name);
-        const dest = path.join(destination, item.name);
-        if (item.isFile()) {
-            return (copyFile(src, dest));
-        }
-        if (item.isDirectory()) {
-            // check for x86e
-            // eslint-disable-next-line no-lonely-if
-            if (item.name !== "x86e_win64") {
-                return (this.copyRecursively(src, dest));
+    writeConfigFile() {
+        const filename = ".gtconfig";
+        const obj = {
+            file: this.resolveWriteHome(filename),
+            middleware: (writer) => {
+                const content = this.find(filename)?.content;
+                // write to file
+                writer.write(`${content.win_pref}\n`);
+                writer.write(`${content.editor_theme}\n`);
+                writer.write(`${content.projects}\n`);
+                writer.write("\n");
+                writer.write(`${content.local_libs}\n`);
+                writer.write(`${content.ref_sys}\n`);
+                writer.write("\n");
+                writer.write(`${content.user_initial}\n`);
+                writer.write(`${content.user_full_name}\n`);
+                writer.write(`${content.project_path}\n`);
+                writer.write("\n");
+                writer.write(`${content.file_diff}\n`);
+                writer.write("\n");
+                writer.write("\n");
+                writer.write(`${content.zero}\n`);
             }
-        }
-        return (Promise.resolve());
+        };
+        return (GTMStream.write(obj));
     }
-    async copyRecursively(source, destination) {
-        // read current directory & loop over it's items
-        const items = await fsp.readdir(source, { withFileTypes: true });
-        items.forEach((item) => {
-            const sourceItem = path.join(source, item.name);
-            const destItem = path.join(destination, item.name);
-            // if file then copy/paste
-            if (item.isFile()) {
-                return (copyFile(sourceItem, destItem));
+    writeConfigJsonFile() {
+        const filename = ".gtconfig.json";
+        const obj = {
+            file: this.resolveWriteHome(filename),
+            middleware: (writer) => {
+                const content = JSON.stringify(this.find(filename)?.content, null, "\t");
+                // write to file
+                writer.write(`${content}`);
             }
-            if (item.isDirectory()) {
-                return (this.copyRecursively(sourceItem, destItem));
+        };
+        return (GTMStream.write(obj));
+    }
+    writeProjectFile() {
+        const filename = ".gtprj";
+        const obj = {
+            file: this.resolveWriteHome(filename),
+            middleware: (writer) => {
+                const projects = this.find(filename)?.content.projects;
+                // write to file
+                projects.forEach((project) => {
+                    writer.write(`${project}\n`);
+                });
             }
-            return Promise.resolve();
-        });
+        };
+        return (GTMStream.write(obj));
+    }
+    writeOpenPrjFlt() {
+        const filename = ".gt_open_prj_flt";
+        const obj = {
+            file: this.resolveWriteHome(filename),
+            middleware: (writer) => {
+                writer.write("");
+            }
+        };
+        return (GTMStream.write(obj));
+    }
+    writePrjFlt() {
+        const filename = ".gt_proj_flt";
+        const obj = {
+            file: this.resolveWriteHome(filename),
+            middleware: (writer) => {
+                writer.write("");
+            }
+        };
+        return (GTMStream.write(obj));
+    }
+    writeDefTags() {
+        const filename = ".gtdeftags";
+        const obj = {
+            file: this.resolveWriteHome(filename),
+            middleware: (writer) => {
+                writer.write("");
+            }
+        };
+        return (GTMStream.write(obj));
+    }
+    writeDeftgts() {
+        const filename = ".gtdeftgts";
+        const obj = {
+            file: this.resolveWriteHome(filename),
+            middleware: (writer) => {
+                writer.write("");
+            }
+        };
+        return (GTMStream.write(obj));
+    }
+    writeLntfilt() {
+        const filename = ".gtlntfilt";
+        const obj = {
+            file: this.resolveWriteHome(filename),
+            middleware: (writer) => {
+                writer.write("");
+            }
+        };
+        return (GTMStream.write(obj));
+    }
+    writeCshrc() {
+        const filename = ".gtm_cshrc";
+        const obj = {
+            file: this.resolveWriteHome(filename),
+            middleware: (writer) => {
+                // this.content.data
+                const data = this.find(filename)?.content.data;
+                writer.write(data);
+            }
+        };
+        return (GTMStream.write(obj));
+    }
+    writePrjTypes() {
+        const filename = ".gtprj_types";
+        const obj = {
+            file: this.resolveWriteHome(filename),
+            middleware: (writer) => {
+                // this.content.data
+                const data = this.find(filename)?.content.data;
+                writer.write(data);
+            }
+        };
+        return (GTMStream.write(obj));
     }
 }
 //# sourceMappingURL=gtmsimulator.js.map

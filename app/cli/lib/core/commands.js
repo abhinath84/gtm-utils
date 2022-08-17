@@ -12,7 +12,7 @@ const pkg = Utils.packageJson();
 // add commands.
 const program = new Command();
 program
-    .name("gtm")
+    .name("gtm-utils")
     .version(pkg.version)
     .description("Command-line interface for UIGTM application");
 // Setup uigtm in remote PC using uigtm project of this PC

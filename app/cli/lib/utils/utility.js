@@ -19,6 +19,7 @@ function accessible(dir, mode) {
             state = true;
         }
         catch (err) {
+            console.log(err);
             state = false;
         }
     }
@@ -26,7 +27,7 @@ function accessible(dir, mode) {
 }
 const FilesystemStream = {
     exists(fileOrDir) {
-        let state = false;
+        const state = false;
         return (state);
     },
     writable(sharedPath) {

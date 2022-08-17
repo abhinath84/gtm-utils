@@ -19,7 +19,7 @@ const pkg = Utils.packageJson();
 const program = new Command();
 
 program
-  .name("gtm")
+  .name("gtm-utils")
   .version(pkg.version)
   .description("Command-line interface for UIGTM application");
 

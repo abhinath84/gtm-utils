@@ -3,9 +3,12 @@ import fs from "fs";
 import * as fsp from "fs/promises";
 import readline from "readline";
 export class Stream {
-    constructor(filename) {
-        // this.mFilename = filename;
-        this.mLineno = 0;
+    static readFile(filename, middleware) {
+        return (fsp.readFile(filename, { encoding: "utf-8" })
+            .then((content) => {
+            middleware(content);
+            Promise.resolve();
+        }));
     }
     static readLine(filename, middleware) {
         let lineno = 0;

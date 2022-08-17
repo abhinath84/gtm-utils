@@ -5,7 +5,7 @@
   "type": "module",
   "preferGlobal": true,
   "bin": {
-    "gtm": "./app/cli/bin/gtm-cli.js"
+    "gtm-utils": "./app/cli/bin/gtm-cli.js"
   },
   "main": "./app/cli/bin/gtm-cli.js",
   "scripts": {
