@@ -18,36 +18,23 @@ program
 // Setup uigtm in remote PC using uigtm project of this PC
 program
     .command("setup")
-    .description("Setup uigtm in remote PC using uigtm project of this PC")
-    // .option("-n, --new <projname>", "Name of the newly created project")
-    // .option("-u, --update <projname>", "Name of the project to update")
-    // .option("-rs, --ref-system <refsystem>", "Reference system path for new UIGTM project")
+    .description("Setup uigtm in remote computer using uigtm settings of this computer")
     .action((options) => gtm.action("setup", options));
 // Export uigtm projects on this PC in json format
-// Use inquirer to ask below questions
-// -o => all, only-projects
 program
     .command("export")
-    .description("Export uigtm projects on this PC in json format")
-    .option("-n, --new <projname>", "Name of the newly created project")
-    .option("-u, --update <projname>", "Name of the project to update")
-    .option("-rs, --ref-system <refsystem>", "Reference system path for new UIGTM project")
+    .description("Export uigtm projects and it's settings")
     .action((options) => gtm.action("export", options));
 // Import uigtm projects on this PC
 program
     .command("import")
-    .description("Import uigtm projects on this PC")
-    .option("-n, --new <projname>", "Name of the newly created project")
-    .option("-u, --update <projname>", "Name of the project to update")
-    .option("-rs, --ref-system <refsystem>", "Reference system path for new UIGTM project")
+    .description("Import uigtm projects and it's settings")
     .action((options) => gtm.action("import", options));
-// Import uigtm projects on this PC
+// Remove uigtm projects on this PC
 program
     .command("remove")
-    .description("Import uigtm projects on this PC")
-    .option("-n, --new <projname>", "Name of the newly created project")
-    .option("-u, --update <projname>", "Name of the project to update")
-    .option("-rs, --ref-system <refsystem>", "Reference system path for new UIGTM project")
+    .description("Remove specified directories from uigtm projects")
+    // .option("-rs, --ref-system <refsystem>", "Reference system path for new UIGTM project")
     .action((options) => gtm.action("remove", options));
 export function parseProgram() {
     return (program.parse(process.argv));

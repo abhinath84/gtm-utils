@@ -4,7 +4,7 @@ This documentation having information about all commands available in `gtm-utils
 
 ## COMMAND
 
-setup - Setup uigtm in remote PC using uigtm setting from this PC
+setup - Setup uigtm in remote computer using uigtm settings of this computer
 
 ## SYNOPSIS
 
@@ -40,7 +40,7 @@ gtm-utils setup
 
 ## COMMAND
 
-export - Export uigtm projects and related settings
+export - Export uigtm projects and it's settings
 
 ## SYNOPSIS
 
@@ -77,7 +77,7 @@ _-f, --file \<filenames...\>_ \
 
 ## COMMAND
 
-gtm-utils import - Import uigtm projects & related settings
+gtm-utils import - Import uigtm projects and it's settings
 
 ## SYNOPSIS
 
@@ -102,7 +102,7 @@ This command collects all test-suite methods for all test modules inside `/csuni
 
 ## COMMAND
 
-remove - Remove specified directories from uigtm projects.
+remove - Remove specified directories from uigtm projects
 
 ## SYNOPSIS
 
