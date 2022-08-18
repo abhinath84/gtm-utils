@@ -11,7 +11,7 @@ Follow below steps to install `gtm-utils` on your machine:
 - (OPTIONAL) Install `npm` if not present. you can install it by executing command: `npm install -g npm@latest`.
   NOTE: check `npm` is installed or not by executing `npm --version` command.
 
-- Download `Source code (zip)` from `https://github.com/abhinath84/gtm-utils/releases/tag/V1.0.0`.
+- Download `Source code (zip)` from [v1.0.0](https://github.com/abhinath84/gtm-utils/releases/tag/V1.0.0).
 - Create a new folder & unzip downloaded zip file.
 - Open a new command terminal (shell).
 - Navigate to the newly created folder in the terminal.
