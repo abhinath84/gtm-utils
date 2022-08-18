@@ -65,8 +65,20 @@ function ask() {
         {
             type: "confirm",
             name: "copyX86e",
-            message: "Want to copy x86e_win64?",
+            message: "Want to copy 'x86e_win64' folder?",
             default: false
+        },
+        {
+            type: "confirm",
+            name: "copyRun",
+            message: "Want to copy 'run' folder?",
+            default: true
+        },
+        {
+            type: "confirm",
+            name: "copyTestrun",
+            message: "Want to copy 'testrun' folder?",
+            default: true
         }
     ];
     return (inquirer.prompt(questions));
@@ -89,7 +101,9 @@ const cli = ( /* option: any */) => (new Promise((resolve, reject) => (ask()
         hostname: answers.remote_host,
         projectPath: answers.remote_projectpath,
         localLibsPath: answers.remote_lacalLibspath,
-        copyX86e: answers.copyX86e
+        copyX86e: answers.copyX86e,
+        copyRun: answers.copyRun,
+        copyTestrun: answers.copyTestrun
     };
     // call 'run' api.
     return (api(input)

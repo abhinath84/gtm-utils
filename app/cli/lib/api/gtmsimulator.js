@@ -58,7 +58,12 @@ export class GTMSimulator {
         const localProjectsPath = `\\\\${os.hostname()}\\projects`;
         const remoteProjectsPath = `\\\\${input.hostname}\\projects`;
         const projects = this.find(".gtconfig")?.content?.projects.split(" ");
-        await this.copy(localProjectsPath, remoteProjectsPath, projects, { copyX86e: input.copyX86e });
+        const options = {
+            copyX86e: input.copyX86e,
+            copyRun: input.copyRun,
+            copyTestrun: input.copyTestrun
+        };
+        await this.copy(localProjectsPath, remoteProjectsPath, projects, options);
         Utils.display("");
         // write to remote home directory
         await this.writeToHome();
@@ -385,7 +390,7 @@ export class GTMSimulator {
                     const src = path.join(source, project);
                     if (fs.existsSync(src)) {
                         const dest = path.join(destination, project);
-                        return (this.copyProject(src, dest, options.copyX86e)
+                        return (this.copyProject(src, dest, options)
                             .then(() => {
                             Utils.display(`   Copied: ${dest}`);
                             Promise.resolve();
@@ -402,13 +407,21 @@ export class GTMSimulator {
         }
         throw new TypeError("Invalid input to 'GTMSimulator::copy()' method.");
     }
-    async copyProject(project, destination, copyX86e) {
+    async copyProject(project, destination, options) {
         // TODO: filter method should be part of parameter (???)
         // filter method
         const filter = (file) => {
-            if ((!file.includes("x86e_win64")) || ((file.includes("x86e_win64")) && copyX86e))
-                return (true);
-            return (false);
+            // ignore x86e_win64 folder
+            if ((file.includes("x86e_win64") && !options.copyX86e))
+                return (false);
+            // ignore run folder
+            if ((file.includes("run") && !options.copyRun))
+                return (false);
+            // ignore run folder
+            if ((file.includes("testrun") && !options.copyTestrun))
+                return (false);
+            // copy
+            return (true);
         };
         const items = await fsp.readdir(project, { withFileTypes: true });
         return (Promise.all(items.map((item) => {

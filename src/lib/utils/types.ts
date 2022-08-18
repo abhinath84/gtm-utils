@@ -5,6 +5,8 @@ export type SetupInputs = {
   projectPath: string;
   localLibsPath: string;
   copyX86e: boolean;
+  copyRun: boolean;
+  copyTestrun: boolean;
 };
 
 export type ExportInput = {
