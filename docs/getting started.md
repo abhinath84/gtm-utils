@@ -16,6 +16,8 @@ Follow below steps to install `gtm-utils` on your machine:
 
 - Open another shell & execute `gtm-utils --version` command. It'll show application version and you are good to go.
 
+You can watch this [demo](./video/gtm_utils_install.mp4).
+
 ## How to run `setup` command
 
 ### Pre-requisite
