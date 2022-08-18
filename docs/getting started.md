@@ -30,7 +30,7 @@ To setup uigtm in remote machine, you have to do below pre-requisites:
 
   > NOTE: once uigtm setup in remote machine is done, unshare `HOME` _environment_ variable directory.
 
-- Install `gtm-utils` application. You can check [How to install _gtm-utils_ application](#how-to-install-gtm-utils-application).
+- Install `gtm-utils` application. You can follow [How to install _gtm-utils_ application](#how-to-install-gtm-utils-application).
 
 ### Run
 
@@ -48,4 +48,4 @@ To setup uigtm in remote machine, you have to do below pre-requisites:
 
 ### Reference
 
-- You can watch this [link](./video/setup.avi).
+- You can watch this [link](./video/gtm_utils_setup.mp4).
