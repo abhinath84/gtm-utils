@@ -63,27 +63,32 @@ const api = (input: ExportInput):Promise<string> => {
   return (Promise.resolve("In-progress!"));
 };
 
-const cli = (): Promise<string> => (
-  // enquire user input
-  ask()
-    .then((answers: Answers) => {
-      Utils.display("\n");
+// const cli = (): Promise<string> => (
+//   // enquire user input
+//   ask()
+//     .then((answers: Answers) => {
+//       Utils.display("\n");
 
-      // validate command options
-      const input = {
-        exportInWorkingDir: answers.exportInWorkingDir,
-        destination: answers.destination
-      };
+//       // validate command options
+//       const input = {
+//         exportInWorkingDir: answers.exportInWorkingDir,
+//         destination: answers.destination
+//       };
 
-      // call 'run' api.
-      return (
-        api(input)
-          .then((response) => {
-            Utils.display(response);
-            return (Promise.resolve(response));
-          })
-      );
-    })
-);
+//       // call 'run' api.
+//       return (
+//         api(input)
+//           .then((response) => {
+//             Utils.display(response);
+//             return (Promise.resolve(response));
+//           })
+//       );
+//     })
+// );
+
+const cli = (): Promise<string> => {
+  Utils.display("In-progress !!!");
+  return (Promise.resolve("In-progress !!!"));
+};
 
 export { api, cli };

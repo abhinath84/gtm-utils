@@ -52,22 +52,29 @@ const api = (input) => {
     Utils.display(input);
     return (Promise.resolve("In-progress!"));
 };
-const cli = () => (
-// enquire user input
-ask()
-    .then((answers) => {
-    Utils.display("\n");
-    // validate command options
-    const input = {
-        exportInWorkingDir: answers.exportInWorkingDir,
-        destination: answers.destination
-    };
-    // call 'run' api.
-    return (api(input)
-        .then((response) => {
-        Utils.display(response);
-        return (Promise.resolve(response));
-    }));
-}));
+// const cli = (): Promise<string> => (
+//   // enquire user input
+//   ask()
+//     .then((answers: Answers) => {
+//       Utils.display("\n");
+//       // validate command options
+//       const input = {
+//         exportInWorkingDir: answers.exportInWorkingDir,
+//         destination: answers.destination
+//       };
+//       // call 'run' api.
+//       return (
+//         api(input)
+//           .then((response) => {
+//             Utils.display(response);
+//             return (Promise.resolve(response));
+//           })
+//       );
+//     })
+// );
+const cli = () => {
+    Utils.display("In-progress !!!");
+    return (Promise.resolve("In-progress !!!"));
+};
 export { api, cli };
 //# sourceMappingURL=export.js.map

@@ -79,4 +79,4 @@ const cli = () => {
     return (Promise.resolve("In-progress !!!"));
 };
 export { api, cli };
-//# sourceMappingURL=import.js.map
+//# sourceMappingURL=remove.js.map

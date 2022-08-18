@@ -152,7 +152,7 @@ const Utils = {
   cmdUsageHelpMsg(name: string): string {
     if (name) {
       return (`Please check Usage for '${name}' command using below:
-$ gtm help ${name}`);
+$ gtm-utils help ${name}`);
     }
     return ("");
   },
