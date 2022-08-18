@@ -3,7 +3,6 @@
 import inquirer, { QuestionCollection, Answers } from "inquirer";
 
 import { ImportInput } from "../utils/types.js";
-import { UIGTMSupport } from "../api/uigtm.js";
 import { UsageError } from "../core/errors.js";
 import { Utils } from "../utils/utility.js";
 

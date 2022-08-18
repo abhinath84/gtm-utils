@@ -29,6 +29,18 @@ const GTMRELATEDFILES = [
   ".gtprj_types"
 ];
 
+function padTo2Digits(num: number) {
+  return num.toString().padStart(2, "0");
+}
+
+function displayDuration(start: Date, end: Date) {
+  const duration = end.getTime() - start.getTime();
+  const hms = Utils.formatToHMS(duration);
+
+  const hmsStr = `Duration(H:M:S) : ${padTo2Digits(hms.hr)}:${padTo2Digits(hms.min)}:${padTo2Digits(hms.sec)}`;
+  Utils.display(hmsStr);
+}
+
 export class GTMSimulator {
   private mGTMInfos: GTMFileInfo[];
 
@@ -67,10 +79,11 @@ export class GTMSimulator {
     this.mProjectsPath = input.projectPath;
     this.mLocalLibsPath = input.localLibsPath;
 
+    const start = new Date();
     // read from local home directory
     await this.readFromHome();
 
-    Utils.display("\n");
+    Utils.display("");
     // copy projects
     const localProjectsPath = `\\\\${os.hostname()}\\projects`;
     const remoteProjectsPath = `\\\\${input.hostname}\\projects`;
@@ -83,7 +96,12 @@ export class GTMSimulator {
     await this.writeToHome();
 
     Utils.display("");
-    return (Promise.resolve(`Setup UIGTM is Completed on ${input.hostname}!`));
+    // display duration
+    const end = new Date();
+    displayDuration(start, end);
+
+    Utils.display("");
+    return (Promise.resolve(`Setup UIGTM is Completed on "${input.hostname}"!`));
   }
 
   // export(input: ExportInput) {

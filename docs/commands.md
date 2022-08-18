@@ -1,4 +1,4 @@
-# Commands
+# INTRODUCTION
 
 This documentation having information about all commands available in `gtm-utils` cli application.
 
