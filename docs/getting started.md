@@ -48,4 +48,4 @@ To setup uigtm in remote machine, you have to do below pre-requisites:
 
 ### Reference
 
-- You can watch this [link](./video/gtm_utils_setup.mp4).
+- You can watch this [demo](./video/gtm_utils_setup.mp4).
