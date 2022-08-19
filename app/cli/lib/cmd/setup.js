@@ -84,13 +84,19 @@ function ask() {
         {
             type: "confirm",
             name: "copyRun",
-            message: "Want to copy 'run' folder?",
+            message: "Want to copy content of 'run' folder?",
             default: true
         },
         {
             type: "confirm",
             name: "copyTestrun",
-            message: "Want to copy 'testrun' folder?",
+            message: "Want to copy content of 'testrun' folder?",
+            default: true
+        },
+        {
+            type: "confirm",
+            name: "copyData",
+            message: "Want to copy content of 'Data' folder?",
             default: true
         }
     ];
@@ -117,7 +123,8 @@ const cli = ( /* option: any */) => (new Promise((resolve, reject) => (ask()
         localLibsPath: answers.remote_lacalLibspath,
         copyX86e: answers.copyX86e,
         copyRun: answers.copyRun,
-        copyTestrun: answers.copyTestrun
+        copyTestrun: answers.copyTestrun,
+        copyData: answers.copyData
     };
     // call 'run' api.
     return (api(input)

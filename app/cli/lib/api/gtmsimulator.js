@@ -64,6 +64,7 @@ export class GTMSimulator {
             copyX86e: input.copyX86e,
             copyRun: input.copyRun,
             copyTestrun: input.copyTestrun,
+            copyData: input.copyData,
         };
         await this.copy(localProjectsPath, remoteProjectsPath, projects, options);
         Utils.display("");
@@ -415,11 +416,6 @@ export class GTMSimulator {
             // ignore x86e_win64 folder
             if (file.includes("x86e_win64") && !options.copyX86e)
                 return false;
-            // // ignore run folder
-            // if (file.includes("run") && !options.copyRun) return false;
-            // // ignore run folder
-            // if (file.includes("testrun") && !options.copyTestrun) return false;
-            // copy
             return true;
         };
         const items = await fsp.readdir(project, { withFileTypes: true });
@@ -427,14 +423,14 @@ export class GTMSimulator {
             const src = path.join(project, item.name);
             const dest = path.join(destination, item.name);
             // if no need to copy 'testrun', 'run', 'data', then make empty directory with corresponding directory name.
-            if ((src.includes("run") && !options.copyRun)
-                || (src.includes("testrun") && !options.copyTestrun)) {
-                return fsp.mkdir(dest).catch((err) => {
+            if ((item.name === "run" && !options.copyRun) ||
+                (item.name === "testrun" && !options.copyTestrun) ||
+                (item.name === "data" && !options.copyData)) {
+                return fsp.mkdir(dest, { recursive: true }).catch((err) => {
                     this.mCopyErrors.push(err);
                     Promise.resolve();
                 });
             }
-            // if (src.includes("testrun") && !options.copyTestrun) return fsp.mkdir(dest);
             // else copy entire directory.
             return fsp
                 .cp(src, dest, { filter, force: true, recursive: true })

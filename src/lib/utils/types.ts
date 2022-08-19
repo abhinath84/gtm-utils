@@ -8,6 +8,7 @@ export type SetupInputs = {
   copyX86e: boolean;
   copyRun: boolean;
   copyTestrun: boolean;
+  copyData: boolean
 };
 
 export type ExportInput = {

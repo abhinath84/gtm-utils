@@ -6,11 +6,7 @@ import * as fsp from "fs/promises";
 import os from "os";
 
 import { SetupInputs, ImportInput, ExportInput } from "../utils/types.js";
-import {
-  ReadFileMiddleware,
-  ReadLineMiddleware,
-  Stream,
-} from "../utils/istream.js";
+import { ReadFileMiddleware, ReadLineMiddleware, Stream } from "../utils/istream.js";
 import { GTMRead, GTMWrite, ReadMiddleware, GTMStream } from "./gtmstream.js";
 import { Utils } from "../utils/utility.js";
 import { UsageError } from "../core/errors.js";
@@ -41,9 +37,7 @@ function displayDuration(start: Date, end: Date) {
   const duration = end.getTime() - start.getTime();
   const hms = Utils.formatToHMS(duration);
 
-  const hmsStr = `Duration(H:M:S) : ${padTo2Digits(hms.hr)}:${padTo2Digits(
-    hms.min
-  )}:${padTo2Digits(hms.sec)}`;
+  const hmsStr = `Duration(H:M:S) : ${padTo2Digits(hms.hr)}:${padTo2Digits(hms.min)}:${padTo2Digits(hms.sec)}`;
   Utils.display(hmsStr);
 }
 
@@ -100,6 +94,7 @@ export class GTMSimulator {
       copyX86e: input.copyX86e,
       copyRun: input.copyRun,
       copyTestrun: input.copyTestrun,
+      copyData: input.copyData,
     };
     await this.copy(localProjectsPath, remoteProjectsPath, projects, options);
 
@@ -123,9 +118,7 @@ export class GTMSimulator {
   // }
 
   private init() {
-    GTMRELATEDFILES.forEach((file) =>
-      this.mGTMInfos.push({ filename: file, content: {} })
-    );
+    GTMRELATEDFILES.forEach((file) => this.mGTMInfos.push({ filename: file, content: {} }));
   }
 
   private find(filename: string): GTMFileInfo | undefined {
@@ -143,8 +136,7 @@ export class GTMSimulator {
 
   private resolveReadHome(filename: string): string {
     if (this.mHomeReadPath) {
-      const resolvedPath =
-        filename.length > 0 ? path.resolve(this.mHomeReadPath, filename) : "";
+      const resolvedPath = filename.length > 0 ? path.resolve(this.mHomeReadPath, filename) : "";
       return resolvedPath;
     }
 
@@ -153,8 +145,7 @@ export class GTMSimulator {
 
   private resolveWriteHome(filename: string): string {
     if (this.mHomeWritePath) {
-      const resolvedPath =
-        filename.length > 0 ? path.resolve(this.mHomeWritePath, filename) : "";
+      const resolvedPath = filename.length > 0 ? path.resolve(this.mHomeWritePath, filename) : "";
       return resolvedPath;
     }
 
@@ -479,12 +470,7 @@ export class GTMSimulator {
     return GTMStream.read(rdObj);
   }
 
-  private async copy(
-    source: string,
-    destination: string,
-    projects: string[],
-    options: any
-  ): Promise<void> {
+  private async copy(source: string, destination: string, projects: string[], options: any): Promise<void> {
     // validate inputs
     if (source.length > 0 && destination.length > 0 && projects.length > 0) {
       // check read/write permission of source & destination
@@ -524,21 +510,12 @@ export class GTMSimulator {
     throw new TypeError("Invalid input to 'GTMSimulator::copy()' method.");
   }
 
-  private async copyProject(
-    project: string,
-    destination: string,
-    options: any
-  ): Promise<void> {
+  private async copyProject(project: string, destination: string, options: any): Promise<void> {
     // TODO: filter method should be part of parameter (???)
     // filter method
     const filter = (file: string): boolean => {
       // ignore x86e_win64 folder
       if (file.includes("x86e_win64") && !options.copyX86e) return false;
-      // // ignore run folder
-      // if (file.includes("run") && !options.copyRun) return false;
-      // // ignore run folder
-      // if (file.includes("testrun") && !options.copyTestrun) return false;
-      // copy
       return true;
     };
 
@@ -549,14 +526,16 @@ export class GTMSimulator {
         const dest = path.join(destination, item.name);
 
         // if no need to copy 'testrun', 'run', 'data', then make empty directory with corresponding directory name.
-        if ((src.includes("run") && !options.copyRun)
-           || (src.includes("testrun") && !options.copyTestrun)) {
-          return fsp.mkdir(dest).catch((err) => {
+        if (
+          (item.name === "run" && !options.copyRun) ||
+          (item.name === "testrun" && !options.copyTestrun) ||
+          (item.name === "data" && !options.copyData)
+        ) {
+          return fsp.mkdir(dest, { recursive: true }).catch((err) => {
             this.mCopyErrors.push(err);
             Promise.resolve();
           });
         }
-        // if (src.includes("testrun") && !options.copyTestrun) return fsp.mkdir(dest);
 
         // else copy entire directory.
         return fsp
@@ -643,11 +622,7 @@ export class GTMSimulator {
     const obj: GTMWrite = {
       file: this.resolveWriteHome(filename),
       middleware: (writer: fs.WriteStream): void => {
-        const content = JSON.stringify(
-          this.find(filename)?.content,
-          null,
-          "\t"
-        );
+        const content = JSON.stringify(this.find(filename)?.content, null, "\t");
 
         // write to file
         writer.write(`${content}`);
