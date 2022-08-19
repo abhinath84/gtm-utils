@@ -35,7 +35,7 @@ To setup uigtm in remote machine, you have to do below pre-requisites:
 
 - Share `HOME` _environment_ variable directory in remote machine with write permission.
 
-  Example: Remote `HOME` _environment_ variable directory: `D:\ptc\HOME` and shared directory name will be `\\anath2d\HOME`.
+  Example: Remote `HOME` _environment_ variable directory: `D:\ptc\abc` and shared directory name will be `\\anath2d\abc`.
 
   > NOTE: once uigtm setup in remote machine is done, unshare `HOME` _environment_ variable directory.
 
@@ -46,8 +46,11 @@ To setup uigtm in remote machine, you have to do below pre-requisites:
 - It will ask following questions, Please answer those questions one-by-one & hit enter
 
   > Remote hostname
+  >
   > Path for projects in remote host
+  >
   > Path for projects in remote host
+  >
   > Want to copy x86e_win64?
 
 - It will execute the command.
