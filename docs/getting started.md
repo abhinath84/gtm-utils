@@ -43,7 +43,7 @@ To setup uigtm in remote machine, you have to do below pre-requisites:
 
 - Open an command terminal(i.e, Windows Powershell, cygwin etc).
 - Write `gtm-utils setup` command & hit enter.
-- It will ask following questions, Please answer those questions one-by-one & hit enter
+- Will ask following questions and answer them one-by-one & hit enter
 
   > Remote hostname
   >
@@ -59,7 +59,6 @@ To setup uigtm in remote machine, you have to do below pre-requisites:
   >
   > Want to copy 'testrun' folder?
 
-- It will execute the command.
 - Once execution is successful, Please open UIGTM on remote machine & start using it.
 
 ### Reference
