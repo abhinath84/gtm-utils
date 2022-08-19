@@ -429,6 +429,8 @@ export class GTMSimulator {
         return (Promise.all(items.map((item) => {
             const src = path.join(project, item.name);
             const dest = path.join(destination, item.name);
+            // if no need to copy 'testrun', 'run', 'data', then make empty directory with corresponding directory name.
+            // else copy entire directory.
             return (fsp.cp(src, dest, { filter, force: true, recursive: true })
                 .then(() => Promise.resolve())
                 .catch((err) => {
@@ -440,17 +442,16 @@ export class GTMSimulator {
             .then(() => Promise.resolve()));
     }
     writeCopyError() {
-        const filename = "copy.err";
-        const errs = this.mCopyErrors;
+        const middleware = (writer) => {
+            // write to file
+            this.mCopyErrors.forEach((err) => {
+                // convert error to string
+                writer.write(`${err.toString()}\n`);
+            });
+        };
         const obj = {
-            file: this.resolveWriteHome(filename),
-            middleware: (writer) => {
-                // write to file
-                errs.forEach((err) => {
-                    // convert error to string
-                    writer.write(`${err.toString()}\n`);
-                });
-            }
+            file: "copy.err",
+            middleware
         };
         return (GTMStream.write(obj));
     }
