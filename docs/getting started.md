@@ -30,14 +30,14 @@ You can watch this [demo](./video/gtm_utils_install.mp4).
 To setup uigtm in remote machine, you have to do below pre-requisites:
 
 - Share directory where uigtm projects will store in remote machine with write permission. That folder's share name must be `projects`.
+
   Example: Remote uigtm project directory: `D:\ptc\uigtm` and shared directory name will be `\\anath2d\projects`.
 
 - Share `HOME` _environment_ variable directory in remote machine with write permission.
+
   Example: Remote `HOME` _environment_ variable directory: `D:\ptc\HOME` and shared directory name will be `\\anath2d\HOME`.
 
   > NOTE: once uigtm setup in remote machine is done, unshare `HOME` _environment_ variable directory.
-
-- Install `gtm-utils` application. You can follow [How to install _gtm-utils_ application](#how-to-install-gtm-utils-application).
 
 ### Run
 
