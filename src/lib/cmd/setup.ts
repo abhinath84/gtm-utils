@@ -44,7 +44,7 @@ function ask(): Promise<any> {
     {
       type: "input",
       name: "remote_homedir",
-      message: "Remote HOME environment directory name",
+      message: "Remote 'HOME' environment directory name",
       validate(value: Answers) {
         // check for empty string
         if (value.length > 0) {

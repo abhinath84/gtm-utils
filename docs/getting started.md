@@ -47,11 +47,17 @@ To setup uigtm in remote machine, you have to do below pre-requisites:
 
   > Remote hostname
   >
+  > Remote 'HOME' environment directory name
+  >
   > Path for projects in remote host
   >
   > Path for projects in remote host
   >
   > Want to copy x86e_win64?
+  >
+  > Want to copy 'run' folder?
+  >
+  > Want to copy 'testrun' folder?
 
 - It will execute the command.
 - Once execution is successful, Please open UIGTM on remote machine & start using it.
