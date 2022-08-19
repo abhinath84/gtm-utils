@@ -57,7 +57,7 @@ To setup uigtm in remote machine, you have to do below pre-requisites:
   >
   > Want to copy 'testrun' folder?
 
-![setup](images\setup.png)
+![setup](./images/setup.png)
 
 - Once execution is successful, Please open UIGTM on remote machine & start using it.
 
