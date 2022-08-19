@@ -6,9 +6,11 @@ Follow below steps to install `gtm-utils` on your machine:
 
 - Install `node.js` version `v16.14.0` or above if it's not present on you machine.
   You can download `node.js` from [here](https://nodejs.org/en/download/)
+
   NOTE: Execute `node --version` command to verify node installed or not.
 
 - Install `npm` by executing command: `npm install -g npm@latest`.
+
   NOTE: Execute `npm --version` command to verify npm installed or not.
 
 - Download `gtm-utils.zip` from [v1.0.0](https://github.com/abhinath84/gtm-utils/releases/tag/V1.0.0).
