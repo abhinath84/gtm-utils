@@ -64,4 +64,4 @@ To setup uigtm in remote machine, you have to do below pre-requisites:
 ### Reference
 
 - You can watch this [demo](./video/gtm_utils_setup.mp4).
-  <a href="./video/gtm_utils_setup.mp4)" target="_top">demo</a>
+  <a href="./video/gtm_utils_setup.mp4" target="_top">demo</a>
