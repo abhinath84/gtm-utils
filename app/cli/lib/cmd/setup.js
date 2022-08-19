@@ -34,6 +34,19 @@ function ask() {
         },
         {
             type: "input",
+            name: "remote_homedir",
+            message: "Remote HOME environment directory name",
+            validate(value) {
+                // check for empty string
+                if (value.length > 0) {
+                    return true;
+                }
+                // TODO: how to verify proper hostname
+                return "Please enter remote HOME environment directory name";
+            }
+        },
+        {
+            type: "input",
             name: "remote_projectpath",
             message: "Path for projects in remote host",
             validate(value) {
@@ -99,6 +112,7 @@ const cli = ( /* option: any */) => (new Promise((resolve, reject) => (ask()
     // validate command options
     const input = {
         hostname: answers.remote_host,
+        homeDir: answers.remote_homedir,
         projectPath: answers.remote_projectpath,
         localLibsPath: answers.remote_lacalLibspath,
         copyX86e: answers.copyX86e,

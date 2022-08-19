@@ -43,11 +43,13 @@ export class GTMSimulator {
         if (process.env.HOME === undefined || process.env.HOME.length <= 0) {
             throw new UsageError("local HOME environment variable is not set.");
         }
-        if (!Utils.FilesystemStream.writable(`\\\\${input.hostname}\\HOME`)) {
-            throw new UsageError(`${`\\\\${input.hostname}\\HOME`} doesn't have write permission.`);
+        // TODO: replace '\\' with path.separator()
+        const remoteHomeDir = `\\\\${input.hostname}\\${input.homeDir}`;
+        if (!Utils.FilesystemStream.writable(remoteHomeDir)) {
+            throw new UsageError(`${remoteHomeDir} doesn't have write permission.`);
         }
         this.mHomeReadPath = process.env.HOME;
-        this.mHomeWritePath = `\\\\${input.hostname}\\HOME`;
+        this.mHomeWritePath = remoteHomeDir;
         this.mProjectsPath = input.projectPath;
         this.mLocalLibsPath = input.localLibsPath;
         const start = new Date();
@@ -401,7 +403,7 @@ export class GTMSimulator {
             });
             await Promise.all(promises);
             // write copy error to copy.err
-            // this.logError();
+            this.writeCopyError();
             // Utils.display(this.mCopyErrors);
             return (Promise.resolve());
         }
@@ -436,6 +438,21 @@ export class GTMSimulator {
             }));
         }))
             .then(() => Promise.resolve()));
+    }
+    writeCopyError() {
+        const filename = "copy.err";
+        const errs = this.mCopyErrors;
+        const obj = {
+            file: this.resolveWriteHome(filename),
+            middleware: (writer) => {
+                // write to file
+                errs.forEach((err) => {
+                    // convert error to string
+                    writer.write(`${err.toString()}\n`);
+                });
+            }
+        };
+        return (GTMStream.write(obj));
     }
     writeToHome() {
         Utils.display("Writing to remote HOME directory ...");

@@ -2,6 +2,7 @@
 
 export type SetupInputs = {
   hostname: string;
+  homeDir: string;
   projectPath: string;
   localLibsPath: string;
   copyX86e: boolean;
