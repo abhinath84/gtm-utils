@@ -16,7 +16,7 @@ const GTMRELATEDFILES = [
     ".gtdeftgts",
     ".gtlntfilt",
     ".gtm_cshrc",
-    ".gtprj_types"
+    ".gtprj_types",
 ];
 function padTo2Digits(num) {
     return num.toString().padStart(2, "0");
@@ -63,7 +63,7 @@ export class GTMSimulator {
         const options = {
             copyX86e: input.copyX86e,
             copyRun: input.copyRun,
-            copyTestrun: input.copyTestrun
+            copyTestrun: input.copyTestrun,
         };
         await this.copy(localProjectsPath, remoteProjectsPath, projects, options);
         Utils.display("");
@@ -74,7 +74,7 @@ export class GTMSimulator {
         const end = new Date();
         displayDuration(start, end);
         Utils.display("");
-        return (Promise.resolve(`Setup UIGTM is Completed on "${input.hostname}"!`));
+        return Promise.resolve(`Setup UIGTM is Completed on "${input.hostname}"!`);
     }
     // export(input: ExportInput) {
     // }
@@ -84,7 +84,7 @@ export class GTMSimulator {
         GTMRELATEDFILES.forEach((file) => this.mGTMInfos.push({ filename: file, content: {} }));
     }
     find(filename) {
-        return (this.mGTMInfos.find((elem) => (elem.filename === filename)));
+        return this.mGTMInfos.find((elem) => elem.filename === filename);
     }
     insert(data) {
         const item = this.find(data.filename);
@@ -97,15 +97,15 @@ export class GTMSimulator {
     }
     resolveReadHome(filename) {
         if (this.mHomeReadPath) {
-            const resolvedPath = (filename.length > 0) ? path.resolve(this.mHomeReadPath, filename) : "";
-            return (resolvedPath);
+            const resolvedPath = filename.length > 0 ? path.resolve(this.mHomeReadPath, filename) : "";
+            return resolvedPath;
         }
         throw new UsageError("Local 'HOME' environment variable is missing!");
     }
     resolveWriteHome(filename) {
         if (this.mHomeWritePath) {
-            const resolvedPath = (filename.length > 0) ? path.resolve(this.mHomeWritePath, filename) : "";
-            return (resolvedPath);
+            const resolvedPath = filename.length > 0 ? path.resolve(this.mHomeWritePath, filename) : "";
+            return resolvedPath;
         }
         throw new UsageError("Remote 'HOME' environment variable is missing!");
     }
@@ -121,9 +121,9 @@ export class GTMSimulator {
             this.readDeftgts(),
             this.readLntfilt(),
             this.readCshrc(),
-            this.readPrjTypes()
+            this.readPrjTypes(),
         ];
-        return (Promise.all(promises).then(() => Promise.resolve()));
+        return Promise.all(promises).then(() => Promise.resolve());
     }
     readConfigFile() {
         const filename = ".gtconfig";
@@ -168,7 +168,7 @@ export class GTMSimulator {
                     default:
                     // do nothing
                 }
-            }
+            },
         };
         const post = () => {
             this.insert({ filename, content: middleware.content });
@@ -176,9 +176,9 @@ export class GTMSimulator {
         const rdObj = {
             file: this.resolveReadHome(filename),
             middleware,
-            post
+            post,
         };
-        return (GTMStream.read(rdObj));
+        return GTMStream.read(rdObj);
     }
     readConfigJsonFile() {
         const filename = ".gtconfig.json";
@@ -188,7 +188,7 @@ export class GTMSimulator {
             method(content) {
                 // Utils.display(lineno);
                 this.content = JSON.parse(content);
-            }
+            },
         };
         const post = () => {
             this.insert({ filename, content: middleware.content });
@@ -196,9 +196,9 @@ export class GTMSimulator {
         const rdObj = {
             file: this.resolveReadHome(filename),
             middleware,
-            post
+            post,
         };
-        return (GTMStream.read(rdObj));
+        return GTMStream.read(rdObj);
     }
     readProjectFile() {
         const filename = ".gtprj";
@@ -223,7 +223,7 @@ export class GTMSimulator {
                     const projectPath = path.join(projectsPath, project);
                     this.content.projects.push(projectPath);
                 }
-            }
+            },
         };
         const post = () => {
             this.insert({ filename, content: middleware.content });
@@ -231,9 +231,9 @@ export class GTMSimulator {
         const rdObj = {
             file: this.resolveReadHome(filename),
             middleware,
-            post
+            post,
         };
-        return (GTMStream.read(rdObj));
+        return GTMStream.read(rdObj);
     }
     readPrjFlt() {
         const filename = ".gt_proj_flt";
@@ -243,7 +243,7 @@ export class GTMSimulator {
             method(content) {
                 // Utils.display(lineno);
                 this.content.data = content;
-            }
+            },
         };
         const post = () => {
             this.insert({ filename, content: middleware.content });
@@ -251,9 +251,9 @@ export class GTMSimulator {
         const rdObj = {
             file: this.resolveReadHome(filename),
             middleware,
-            post
+            post,
         };
-        return (GTMStream.read(rdObj));
+        return GTMStream.read(rdObj);
     }
     readOpenPrjFlt() {
         const filename = ".gt_open_prj_flt";
@@ -263,7 +263,7 @@ export class GTMSimulator {
             method(content) {
                 // Utils.display(lineno);
                 this.content.data = content;
-            }
+            },
         };
         const post = () => {
             this.insert({ filename, content: middleware.content });
@@ -271,9 +271,9 @@ export class GTMSimulator {
         const rdObj = {
             file: this.resolveReadHome(filename),
             middleware,
-            post
+            post,
         };
-        return (GTMStream.read(rdObj));
+        return GTMStream.read(rdObj);
     }
     readDefTags() {
         const filename = ".gtdeftags";
@@ -283,7 +283,7 @@ export class GTMSimulator {
             method(content) {
                 // Utils.display(lineno);
                 this.content.data = content;
-            }
+            },
         };
         const post = () => {
             this.insert({ filename, content: middleware.content });
@@ -291,9 +291,9 @@ export class GTMSimulator {
         const rdObj = {
             file: this.resolveReadHome(filename),
             middleware,
-            post
+            post,
         };
-        return (GTMStream.read(rdObj));
+        return GTMStream.read(rdObj);
     }
     readDeftgts() {
         const filename = ".gtdeftgts";
@@ -303,7 +303,7 @@ export class GTMSimulator {
             method(content) {
                 // Utils.display(lineno);
                 this.content.data = content;
-            }
+            },
         };
         const post = () => {
             this.insert({ filename, content: middleware.content });
@@ -311,9 +311,9 @@ export class GTMSimulator {
         const rdObj = {
             file: this.resolveReadHome(filename),
             middleware,
-            post
+            post,
         };
-        return (GTMStream.read(rdObj));
+        return GTMStream.read(rdObj);
     }
     readLntfilt() {
         const filename = ".gtlntfilt";
@@ -323,7 +323,7 @@ export class GTMSimulator {
             method(content) {
                 // Utils.display(lineno);
                 this.content.data = content;
-            }
+            },
         };
         const post = () => {
             this.insert({ filename, content: middleware.content });
@@ -331,9 +331,9 @@ export class GTMSimulator {
         const rdObj = {
             file: this.resolveReadHome(filename),
             middleware,
-            post
+            post,
         };
-        return (GTMStream.read(rdObj));
+        return GTMStream.read(rdObj);
     }
     readCshrc() {
         const filename = ".gtm_cshrc";
@@ -343,7 +343,7 @@ export class GTMSimulator {
             method(content) {
                 // Utils.display(content);
                 this.content.data = content;
-            }
+            },
         };
         const post = () => {
             this.insert({ filename, content: middleware.content });
@@ -352,9 +352,9 @@ export class GTMSimulator {
         const rdObj = {
             file: this.resolveReadHome(filename),
             middleware,
-            post
+            post,
         };
-        return (GTMStream.read(rdObj));
+        return GTMStream.read(rdObj);
     }
     readPrjTypes() {
         const filename = ".gtprj_types";
@@ -363,7 +363,7 @@ export class GTMSimulator {
             type: "file",
             method(content) {
                 this.content.data = content;
-            }
+            },
         };
         const post = () => {
             this.insert({ filename, content: middleware.content });
@@ -371,9 +371,9 @@ export class GTMSimulator {
         const rdObj = {
             file: this.resolveReadHome(filename),
             middleware,
-            post
+            post,
         };
-        return (GTMStream.read(rdObj));
+        return GTMStream.read(rdObj);
     }
     async copy(source, destination, projects, options) {
         // validate inputs
@@ -392,20 +392,19 @@ export class GTMSimulator {
                     const src = path.join(source, project);
                     if (fs.existsSync(src)) {
                         const dest = path.join(destination, project);
-                        return (this.copyProject(src, dest, options)
-                            .then(() => {
+                        return this.copyProject(src, dest, options).then(() => {
                             Utils.display(`   Copied: ${dest}`);
                             Promise.resolve();
-                        }));
+                        });
                     }
                 }
-                return (Promise.resolve());
+                return Promise.resolve();
             });
             await Promise.all(promises);
             // write copy error to copy.err
             this.writeCopyError();
             // Utils.display(this.mCopyErrors);
-            return (Promise.resolve());
+            return Promise.resolve();
         }
         throw new TypeError("Invalid input to 'GTMSimulator::copy()' method.");
     }
@@ -414,32 +413,38 @@ export class GTMSimulator {
         // filter method
         const filter = (file) => {
             // ignore x86e_win64 folder
-            if ((file.includes("x86e_win64") && !options.copyX86e))
-                return (false);
-            // ignore run folder
-            if ((file.includes("run") && !options.copyRun))
-                return (false);
-            // ignore run folder
-            if ((file.includes("testrun") && !options.copyTestrun))
-                return (false);
+            if (file.includes("x86e_win64") && !options.copyX86e)
+                return false;
+            // // ignore run folder
+            // if (file.includes("run") && !options.copyRun) return false;
+            // // ignore run folder
+            // if (file.includes("testrun") && !options.copyTestrun) return false;
             // copy
-            return (true);
+            return true;
         };
         const items = await fsp.readdir(project, { withFileTypes: true });
-        return (Promise.all(items.map((item) => {
+        return Promise.all(items.map((item) => {
             const src = path.join(project, item.name);
             const dest = path.join(destination, item.name);
             // if no need to copy 'testrun', 'run', 'data', then make empty directory with corresponding directory name.
+            if ((src.includes("run") && !options.copyRun)
+                || (src.includes("testrun") && !options.copyTestrun)) {
+                return fsp.mkdir(dest).catch((err) => {
+                    this.mCopyErrors.push(err);
+                    Promise.resolve();
+                });
+            }
+            // if (src.includes("testrun") && !options.copyTestrun) return fsp.mkdir(dest);
             // else copy entire directory.
-            return (fsp.cp(src, dest, { filter, force: true, recursive: true })
+            return fsp
+                .cp(src, dest, { filter, force: true, recursive: true })
                 .then(() => Promise.resolve())
                 .catch((err) => {
                 // TODO: write copy error here (???)
                 this.mCopyErrors.push(err);
                 Promise.resolve();
-            }));
-        }))
-            .then(() => Promise.resolve()));
+            });
+        })).then(() => Promise.resolve());
     }
     writeCopyError() {
         const middleware = (writer) => {
@@ -451,9 +456,9 @@ export class GTMSimulator {
         };
         const obj = {
             file: "copy.err",
-            middleware
+            middleware,
         };
-        return (GTMStream.write(obj));
+        return GTMStream.write(obj);
     }
     writeToHome() {
         Utils.display("Writing to remote HOME directory ...");
@@ -467,9 +472,9 @@ export class GTMSimulator {
             this.writeDeftgts(),
             this.writeLntfilt(),
             this.writeCshrc(),
-            this.writePrjTypes()
+            this.writePrjTypes(),
         ];
-        return (Promise.all(promises).then(() => Promise.resolve()));
+        return Promise.all(promises).then(() => Promise.resolve());
     }
     writeConfigFile() {
         const filename = ".gtconfig";
@@ -493,9 +498,9 @@ export class GTMSimulator {
                 writer.write("\n");
                 writer.write("\n");
                 writer.write(`${content.zero}\n`);
-            }
+            },
         };
-        return (GTMStream.write(obj));
+        return GTMStream.write(obj);
     }
     writeConfigJsonFile() {
         const filename = ".gtconfig.json";
@@ -505,9 +510,9 @@ export class GTMSimulator {
                 const content = JSON.stringify(this.find(filename)?.content, null, "\t");
                 // write to file
                 writer.write(`${content}`);
-            }
+            },
         };
-        return (GTMStream.write(obj));
+        return GTMStream.write(obj);
     }
     writeProjectFile() {
         const filename = ".gtprj";
@@ -519,9 +524,9 @@ export class GTMSimulator {
                 projects.forEach((project) => {
                     writer.write(`${project}\n`);
                 });
-            }
+            },
         };
-        return (GTMStream.write(obj));
+        return GTMStream.write(obj);
     }
     writeOpenPrjFlt() {
         const filename = ".gt_open_prj_flt";
@@ -529,9 +534,9 @@ export class GTMSimulator {
             file: this.resolveWriteHome(filename),
             middleware: (writer) => {
                 writer.write("");
-            }
+            },
         };
-        return (GTMStream.write(obj));
+        return GTMStream.write(obj);
     }
     writePrjFlt() {
         const filename = ".gt_proj_flt";
@@ -539,9 +544,9 @@ export class GTMSimulator {
             file: this.resolveWriteHome(filename),
             middleware: (writer) => {
                 writer.write("");
-            }
+            },
         };
-        return (GTMStream.write(obj));
+        return GTMStream.write(obj);
     }
     writeDefTags() {
         const filename = ".gtdeftags";
@@ -549,9 +554,9 @@ export class GTMSimulator {
             file: this.resolveWriteHome(filename),
             middleware: (writer) => {
                 writer.write("");
-            }
+            },
         };
-        return (GTMStream.write(obj));
+        return GTMStream.write(obj);
     }
     writeDeftgts() {
         const filename = ".gtdeftgts";
@@ -559,9 +564,9 @@ export class GTMSimulator {
             file: this.resolveWriteHome(filename),
             middleware: (writer) => {
                 writer.write("");
-            }
+            },
         };
-        return (GTMStream.write(obj));
+        return GTMStream.write(obj);
     }
     writeLntfilt() {
         const filename = ".gtlntfilt";
@@ -569,9 +574,9 @@ export class GTMSimulator {
             file: this.resolveWriteHome(filename),
             middleware: (writer) => {
                 writer.write("");
-            }
+            },
         };
-        return (GTMStream.write(obj));
+        return GTMStream.write(obj);
     }
     writeCshrc() {
         const filename = ".gtm_cshrc";
@@ -581,9 +586,9 @@ export class GTMSimulator {
                 // this.content.data
                 const data = this.find(filename)?.content.data;
                 writer.write(data);
-            }
+            },
         };
-        return (GTMStream.write(obj));
+        return GTMStream.write(obj);
     }
     writePrjTypes() {
         const filename = ".gtprj_types";
@@ -593,9 +598,9 @@ export class GTMSimulator {
                 // this.content.data
                 const data = this.find(filename)?.content.data;
                 writer.write(data);
-            }
+            },
         };
-        return (GTMStream.write(obj));
+        return GTMStream.write(obj);
     }
 }
 //# sourceMappingURL=gtmsimulator.js.map

@@ -6,7 +6,11 @@ import * as fsp from "fs/promises";
 import os from "os";
 
 import { SetupInputs, ImportInput, ExportInput } from "../utils/types.js";
-import { ReadFileMiddleware, ReadLineMiddleware, Stream } from "../utils/istream.js";
+import {
+  ReadFileMiddleware,
+  ReadLineMiddleware,
+  Stream,
+} from "../utils/istream.js";
 import { GTMRead, GTMWrite, ReadMiddleware, GTMStream } from "./gtmstream.js";
 import { Utils } from "../utils/utility.js";
 import { UsageError } from "../core/errors.js";
@@ -14,7 +18,7 @@ import { UsageError } from "../core/errors.js";
 type GTMFileInfo = {
   filename: string;
   content: any;
-}
+};
 
 const GTMRELATEDFILES = [
   ".gtconfig",
@@ -26,7 +30,7 @@ const GTMRELATEDFILES = [
   ".gtdeftgts",
   ".gtlntfilt",
   ".gtm_cshrc",
-  ".gtprj_types"
+  ".gtprj_types",
 ];
 
 function padTo2Digits(num: number) {
@@ -37,7 +41,9 @@ function displayDuration(start: Date, end: Date) {
   const duration = end.getTime() - start.getTime();
   const hms = Utils.formatToHMS(duration);
 
-  const hmsStr = `Duration(H:M:S) : ${padTo2Digits(hms.hr)}:${padTo2Digits(hms.min)}:${padTo2Digits(hms.sec)}`;
+  const hmsStr = `Duration(H:M:S) : ${padTo2Digits(hms.hr)}:${padTo2Digits(
+    hms.min
+  )}:${padTo2Digits(hms.sec)}`;
   Utils.display(hmsStr);
 }
 
@@ -93,7 +99,7 @@ export class GTMSimulator {
     const options = {
       copyX86e: input.copyX86e,
       copyRun: input.copyRun,
-      copyTestrun: input.copyTestrun
+      copyTestrun: input.copyTestrun,
     };
     await this.copy(localProjectsPath, remoteProjectsPath, projects, options);
 
@@ -107,7 +113,7 @@ export class GTMSimulator {
     displayDuration(start, end);
 
     Utils.display("");
-    return (Promise.resolve(`Setup UIGTM is Completed on "${input.hostname}"!`));
+    return Promise.resolve(`Setup UIGTM is Completed on "${input.hostname}"!`);
   }
 
   // export(input: ExportInput) {
@@ -117,11 +123,13 @@ export class GTMSimulator {
   // }
 
   private init() {
-    GTMRELATEDFILES.forEach((file) => this.mGTMInfos.push({ filename: file, content: {} }));
+    GTMRELATEDFILES.forEach((file) =>
+      this.mGTMInfos.push({ filename: file, content: {} })
+    );
   }
 
   private find(filename: string): GTMFileInfo | undefined {
-    return (this.mGTMInfos.find((elem) => (elem.filename === filename)));
+    return this.mGTMInfos.find((elem) => elem.filename === filename);
   }
 
   private insert(data: GTMFileInfo) {
@@ -135,8 +143,9 @@ export class GTMSimulator {
 
   private resolveReadHome(filename: string): string {
     if (this.mHomeReadPath) {
-      const resolvedPath = (filename.length > 0) ? path.resolve(this.mHomeReadPath, filename) : "";
-      return (resolvedPath);
+      const resolvedPath =
+        filename.length > 0 ? path.resolve(this.mHomeReadPath, filename) : "";
+      return resolvedPath;
     }
 
     throw new UsageError("Local 'HOME' environment variable is missing!");
@@ -144,8 +153,9 @@ export class GTMSimulator {
 
   private resolveWriteHome(filename: string): string {
     if (this.mHomeWritePath) {
-      const resolvedPath = (filename.length > 0) ? path.resolve(this.mHomeWritePath, filename) : "";
-      return (resolvedPath);
+      const resolvedPath =
+        filename.length > 0 ? path.resolve(this.mHomeWritePath, filename) : "";
+      return resolvedPath;
     }
 
     throw new UsageError("Remote 'HOME' environment variable is missing!");
@@ -164,10 +174,10 @@ export class GTMSimulator {
       this.readDeftgts(),
       this.readLntfilt(),
       this.readCshrc(),
-      this.readPrjTypes()
+      this.readPrjTypes(),
     ];
 
-    return (Promise.all(promises).then(() => Promise.resolve()));
+    return Promise.all(promises).then(() => Promise.resolve());
   }
 
   private readConfigFile(): Promise<void> {
@@ -176,46 +186,46 @@ export class GTMSimulator {
     const projectsPath = this.mProjectsPath;
     const localLibsPath = this.mLocalLibsPath;
     const middleware: ReadMiddleware = {
-      content: { },
+      content: {},
       type: "line",
       method(content: string, lineno: number): void {
         // Utils.display(`Line ${lineno} : ${content}`);
 
         switch (lineno) {
-        case 1:
-          this.content.win_pref = content;
-          break;
-        case 2:
-          this.content.editor_theme = content;
-          break;
-        case 3:
-          this.content.projects = content;
-          break;
-        case 5:
-          this.content.local_libs = localLibsPath;
-          break;
-        case 6:
-          this.content.ref_sys = content;
-          break;
-        case 8:
-          this.content.user_initial = content;
-          break;
-        case 9:
-          this.content.user_full_name = content;
-          break;
-        case 10:
-          this.content.project_path = projectsPath;
-          break;
-        case 12:
-          this.content.file_diff = content;
-          break;
-        case 15:
-          this.content.zero = content;
-          break;
-        default:
+          case 1:
+            this.content.win_pref = content;
+            break;
+          case 2:
+            this.content.editor_theme = content;
+            break;
+          case 3:
+            this.content.projects = content;
+            break;
+          case 5:
+            this.content.local_libs = localLibsPath;
+            break;
+          case 6:
+            this.content.ref_sys = content;
+            break;
+          case 8:
+            this.content.user_initial = content;
+            break;
+          case 9:
+            this.content.user_full_name = content;
+            break;
+          case 10:
+            this.content.project_path = projectsPath;
+            break;
+          case 12:
+            this.content.file_diff = content;
+            break;
+          case 15:
+            this.content.zero = content;
+            break;
+          default:
           // do nothing
         }
-      }
+      },
     };
 
     const post = () => {
@@ -225,22 +235,22 @@ export class GTMSimulator {
     const rdObj: GTMRead = {
       file: this.resolveReadHome(filename),
       middleware,
-      post
+      post,
     };
 
-    return (GTMStream.read(rdObj));
+    return GTMStream.read(rdObj);
   }
 
   private readConfigJsonFile(): Promise<void> {
     const filename = ".gtconfig.json";
 
     const middleware: ReadMiddleware = {
-      content: { },
+      content: {},
       type: "file",
       method(content: string): void {
         // Utils.display(lineno);
         this.content = JSON.parse(content);
-      }
+      },
     };
 
     const post = () => {
@@ -250,10 +260,10 @@ export class GTMSimulator {
     const rdObj: GTMRead = {
       file: this.resolveReadHome(filename),
       middleware,
-      post
+      post,
     };
 
-    return (GTMStream.read(rdObj));
+    return GTMStream.read(rdObj);
   }
 
   private readProjectFile(): Promise<void> {
@@ -278,7 +288,7 @@ export class GTMSimulator {
           const projectPath = path.join(projectsPath, project);
           this.content.projects.push(projectPath);
         }
-      }
+      },
     };
 
     const post = () => {
@@ -288,22 +298,22 @@ export class GTMSimulator {
     const rdObj: GTMRead = {
       file: this.resolveReadHome(filename),
       middleware,
-      post
+      post,
     };
 
-    return (GTMStream.read(rdObj));
+    return GTMStream.read(rdObj);
   }
 
   private readPrjFlt(): Promise<void> {
     const filename = ".gt_proj_flt";
 
     const middleware: ReadMiddleware = {
-      content: { },
+      content: {},
       type: "file",
       method(content: string): void {
         // Utils.display(lineno);
         this.content.data = content;
-      }
+      },
     };
 
     const post = () => {
@@ -313,22 +323,22 @@ export class GTMSimulator {
     const rdObj: GTMRead = {
       file: this.resolveReadHome(filename),
       middleware,
-      post
+      post,
     };
 
-    return (GTMStream.read(rdObj));
+    return GTMStream.read(rdObj);
   }
 
   private readOpenPrjFlt(): Promise<void> {
     const filename = ".gt_open_prj_flt";
 
     const middleware: ReadMiddleware = {
-      content: { },
+      content: {},
       type: "file",
       method(content: string): void {
         // Utils.display(lineno);
         this.content.data = content;
-      }
+      },
     };
 
     const post = () => {
@@ -338,22 +348,22 @@ export class GTMSimulator {
     const rdObj: GTMRead = {
       file: this.resolveReadHome(filename),
       middleware,
-      post
+      post,
     };
 
-    return (GTMStream.read(rdObj));
+    return GTMStream.read(rdObj);
   }
 
   private readDefTags(): Promise<void> {
     const filename = ".gtdeftags";
 
     const middleware: ReadMiddleware = {
-      content: { },
+      content: {},
       type: "file",
       method(content: string): void {
         // Utils.display(lineno);
         this.content.data = content;
-      }
+      },
     };
 
     const post = () => {
@@ -363,22 +373,22 @@ export class GTMSimulator {
     const rdObj: GTMRead = {
       file: this.resolveReadHome(filename),
       middleware,
-      post
+      post,
     };
 
-    return (GTMStream.read(rdObj));
+    return GTMStream.read(rdObj);
   }
 
   private readDeftgts(): Promise<void> {
     const filename = ".gtdeftgts";
 
     const middleware: ReadMiddleware = {
-      content: { },
+      content: {},
       type: "file",
       method(content: string): void {
         // Utils.display(lineno);
         this.content.data = content;
-      }
+      },
     };
 
     const post = () => {
@@ -388,22 +398,22 @@ export class GTMSimulator {
     const rdObj: GTMRead = {
       file: this.resolveReadHome(filename),
       middleware,
-      post
+      post,
     };
 
-    return (GTMStream.read(rdObj));
+    return GTMStream.read(rdObj);
   }
 
   private readLntfilt(): Promise<void> {
     const filename = ".gtlntfilt";
 
     const middleware: ReadMiddleware = {
-      content: { },
+      content: {},
       type: "file",
       method(content: string): void {
         // Utils.display(lineno);
         this.content.data = content;
-      }
+      },
     };
 
     const post = () => {
@@ -413,22 +423,22 @@ export class GTMSimulator {
     const rdObj: GTMRead = {
       file: this.resolveReadHome(filename),
       middleware,
-      post
+      post,
     };
 
-    return (GTMStream.read(rdObj));
+    return GTMStream.read(rdObj);
   }
 
   private readCshrc(): Promise<void> {
     const filename = ".gtm_cshrc";
 
     const middleware: ReadMiddleware = {
-      content: { },
+      content: {},
       type: "file",
       method(content: string): void {
         // Utils.display(content);
         this.content.data = content;
-      }
+      },
     };
 
     const post = () => {
@@ -439,21 +449,21 @@ export class GTMSimulator {
     const rdObj: GTMRead = {
       file: this.resolveReadHome(filename),
       middleware,
-      post
+      post,
     };
 
-    return (GTMStream.read(rdObj));
+    return GTMStream.read(rdObj);
   }
 
   private readPrjTypes(): Promise<void> {
     const filename = ".gtprj_types";
 
     const middleware: ReadMiddleware = {
-      content: { },
+      content: {},
       type: "file",
       method(content: string): void {
         this.content.data = content;
-      }
+      },
     };
 
     const post = () => {
@@ -463,13 +473,18 @@ export class GTMSimulator {
     const rdObj: GTMRead = {
       file: this.resolveReadHome(filename),
       middleware,
-      post
+      post,
     };
 
-    return (GTMStream.read(rdObj));
+    return GTMStream.read(rdObj);
   }
 
-  private async copy(source: string, destination: string, projects: string[], options: any): Promise<void> {
+  private async copy(
+    source: string,
+    destination: string,
+    projects: string[],
+    options: any
+  ): Promise<void> {
     // validate inputs
     if (source.length > 0 && destination.length > 0 && projects.length > 0) {
       // check read/write permission of source & destination
@@ -488,15 +503,14 @@ export class GTMSimulator {
           const src = path.join(source, project);
           if (fs.existsSync(src)) {
             const dest = path.join(destination, project);
-            return (this.copyProject(src, dest, options)
-              .then(() => {
-                Utils.display(`   Copied: ${dest}`);
-                Promise.resolve();
-              }));
+            return this.copyProject(src, dest, options).then(() => {
+              Utils.display(`   Copied: ${dest}`);
+              Promise.resolve();
+            });
           }
         }
 
-        return (Promise.resolve());
+        return Promise.resolve();
       });
       await Promise.all(promises);
 
@@ -504,44 +518,57 @@ export class GTMSimulator {
       this.writeCopyError();
       // Utils.display(this.mCopyErrors);
 
-      return (Promise.resolve());
+      return Promise.resolve();
     }
 
     throw new TypeError("Invalid input to 'GTMSimulator::copy()' method.");
   }
 
-  private async copyProject(project: string, destination: string, options: any): Promise<void> {
+  private async copyProject(
+    project: string,
+    destination: string,
+    options: any
+  ): Promise<void> {
     // TODO: filter method should be part of parameter (???)
     // filter method
     const filter = (file: string): boolean => {
       // ignore x86e_win64 folder
-      if ((file.includes("x86e_win64") && !options.copyX86e)) return (false);
-      // ignore run folder
-      if ((file.includes("run") && !options.copyRun)) return (false);
-      // ignore run folder
-      if ((file.includes("testrun") && !options.copyTestrun)) return (false);
+      if (file.includes("x86e_win64") && !options.copyX86e) return false;
+      // // ignore run folder
+      // if (file.includes("run") && !options.copyRun) return false;
+      // // ignore run folder
+      // if (file.includes("testrun") && !options.copyTestrun) return false;
       // copy
-      return (true);
+      return true;
     };
 
     const items = await fsp.readdir(project, { withFileTypes: true });
-    return (Promise.all(items.map((item) => {
-      const src = path.join(project, item.name);
-      const dest = path.join(destination, item.name);
+    return Promise.all(
+      items.map((item) => {
+        const src = path.join(project, item.name);
+        const dest = path.join(destination, item.name);
 
-      // if no need to copy 'testrun', 'run', 'data', then make empty directory with corresponding directory name.
+        // if no need to copy 'testrun', 'run', 'data', then make empty directory with corresponding directory name.
+        if ((src.includes("run") && !options.copyRun)
+           || (src.includes("testrun") && !options.copyTestrun)) {
+          return fsp.mkdir(dest).catch((err) => {
+            this.mCopyErrors.push(err);
+            Promise.resolve();
+          });
+        }
+        // if (src.includes("testrun") && !options.copyTestrun) return fsp.mkdir(dest);
 
-      // else copy entire directory.
-      return (fsp.cp(src, dest, { filter, force: true, recursive: true })
-        .then(() => Promise.resolve())
-        .catch((err) => {
-          // TODO: write copy error here (???)
-          this.mCopyErrors.push(err);
-          Promise.resolve();
-        }));
-    }))
-      .then(() => Promise.resolve())
-    );
+        // else copy entire directory.
+        return fsp
+          .cp(src, dest, { filter, force: true, recursive: true })
+          .then(() => Promise.resolve())
+          .catch((err) => {
+            // TODO: write copy error here (???)
+            this.mCopyErrors.push(err);
+            Promise.resolve();
+          });
+      })
+    ).then(() => Promise.resolve());
   }
 
   private writeCopyError(): Promise<void> {
@@ -555,10 +582,10 @@ export class GTMSimulator {
 
     const obj: GTMWrite = {
       file: "copy.err",
-      middleware
+      middleware,
     };
 
-    return (GTMStream.write(obj));
+    return GTMStream.write(obj);
   }
 
   private writeToHome(): Promise<void> {
@@ -574,10 +601,10 @@ export class GTMSimulator {
       this.writeDeftgts(),
       this.writeLntfilt(),
       this.writeCshrc(),
-      this.writePrjTypes()
+      this.writePrjTypes(),
     ];
 
-    return (Promise.all(promises).then(() => Promise.resolve()));
+    return Promise.all(promises).then(() => Promise.resolve());
   }
 
   private writeConfigFile(): Promise<void> {
@@ -604,10 +631,10 @@ export class GTMSimulator {
         writer.write("\n");
         writer.write("\n");
         writer.write(`${content.zero}\n`);
-      }
+      },
     };
 
-    return (GTMStream.write(obj));
+    return GTMStream.write(obj);
   }
 
   private writeConfigJsonFile(): Promise<void> {
@@ -616,14 +643,18 @@ export class GTMSimulator {
     const obj: GTMWrite = {
       file: this.resolveWriteHome(filename),
       middleware: (writer: fs.WriteStream): void => {
-        const content = JSON.stringify(this.find(filename)?.content, null, "\t");
+        const content = JSON.stringify(
+          this.find(filename)?.content,
+          null,
+          "\t"
+        );
 
         // write to file
         writer.write(`${content}`);
-      }
+      },
     };
 
-    return (GTMStream.write(obj));
+    return GTMStream.write(obj);
   }
 
   private writeProjectFile(): Promise<void> {
@@ -638,10 +669,10 @@ export class GTMSimulator {
         projects.forEach((project: string) => {
           writer.write(`${project}\n`);
         });
-      }
+      },
     };
 
-    return (GTMStream.write(obj));
+    return GTMStream.write(obj);
   }
 
   private writeOpenPrjFlt(): Promise<void> {
@@ -651,10 +682,10 @@ export class GTMSimulator {
       file: this.resolveWriteHome(filename),
       middleware: (writer: fs.WriteStream): void => {
         writer.write("");
-      }
+      },
     };
 
-    return (GTMStream.write(obj));
+    return GTMStream.write(obj);
   }
 
   private writePrjFlt(): Promise<void> {
@@ -664,10 +695,10 @@ export class GTMSimulator {
       file: this.resolveWriteHome(filename),
       middleware: (writer: fs.WriteStream): void => {
         writer.write("");
-      }
+      },
     };
 
-    return (GTMStream.write(obj));
+    return GTMStream.write(obj);
   }
 
   private writeDefTags(): Promise<void> {
@@ -677,10 +708,10 @@ export class GTMSimulator {
       file: this.resolveWriteHome(filename),
       middleware: (writer: fs.WriteStream): void => {
         writer.write("");
-      }
+      },
     };
 
-    return (GTMStream.write(obj));
+    return GTMStream.write(obj);
   }
 
   private writeDeftgts(): Promise<void> {
@@ -690,10 +721,10 @@ export class GTMSimulator {
       file: this.resolveWriteHome(filename),
       middleware: (writer: fs.WriteStream): void => {
         writer.write("");
-      }
+      },
     };
 
-    return (GTMStream.write(obj));
+    return GTMStream.write(obj);
   }
 
   private writeLntfilt(): Promise<void> {
@@ -703,10 +734,10 @@ export class GTMSimulator {
       file: this.resolveWriteHome(filename),
       middleware: (writer: fs.WriteStream): void => {
         writer.write("");
-      }
+      },
     };
 
-    return (GTMStream.write(obj));
+    return GTMStream.write(obj);
   }
 
   private writeCshrc(): Promise<void> {
@@ -718,10 +749,10 @@ export class GTMSimulator {
         // this.content.data
         const data = this.find(filename)?.content.data;
         writer.write(data);
-      }
+      },
     };
 
-    return (GTMStream.write(obj));
+    return GTMStream.write(obj);
   }
 
   private writePrjTypes(): Promise<void> {
@@ -733,9 +764,9 @@ export class GTMSimulator {
         // this.content.data
         const data = this.find(filename)?.content.data;
         writer.write(data);
-      }
+      },
     };
 
-    return (GTMStream.write(obj));
+    return GTMStream.write(obj);
   }
 }
