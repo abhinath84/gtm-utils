@@ -4,24 +4,11 @@
 
 Follow below steps to install `gtm-utils` on your machine:
 
-- Install `node.js` version `v16.14.0` or above if it's not present on you machine.
-  You can download `node.js` from [here](https://nodejs.org/en/download/)
-
-  NOTE: Execute `node --version` command to verify node installed or not.
-
-- Install `npm` by executing command: `npm install -g npm@latest`.
-
-  NOTE: Execute `npm --version` command to verify npm installed or not.
-
-- Download `gtm-utils.zip` from [v1.0.0](https://github.com/abhinath84/gtm-utils/releases/tag/V1.0.0).
-- Create a new folder & unzip downloaded zip file.
-- Open a new command terminal (shell).
-- Navigate to unzip folder in the terminal.
-- write `npm install` & hit enter.
-- write `npm link` & hit enter.
+- [Install chocolatey](https://jcutrer.com/windows/install-chocolatey-choco-windows10) on your computer.
+- Open windows Powershell in _Administrator_ mode.
+- write `wget https://github.com/abhinath84/gtm-utils/releases/download/V1.0.0/install.sh` & hit enter.
+- now run downloaded `install.sh` script.
 - Open another shell & execute `gtm-utils --version` command. It'll show application version and you are good to go.
-
-You can watch this [demo](./video/gtm_utils_install.mp4).
 
 ## How to run `setup` command
 
