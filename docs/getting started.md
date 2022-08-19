@@ -25,7 +25,7 @@ Follow below steps to install `gtm-utils` on your machine:
 
 ### Pre-requisite
 
-To setup uigtm in remote machine, you have to do below pre-requisites:
+Below points to be executed on remote machine(example: CoLo machine) where you want to setup uigtm:
 
 - Share directory where uigtm projects will store in remote machine with write permission. That folder's share name must be `projects`.
 
@@ -39,7 +39,7 @@ To setup uigtm in remote machine, you have to do below pre-requisites:
 
 ### Run
 
-- Open an command terminal(i.e, Windows Powershell, cygwin etc).
+- Open an command terminal(i.e, Windows Powershell, cygwin etc) on current system where you install `gtm-utils` application.
 - Write `gtm-utils setup` command & hit enter.
 - Will ask following questions and answer them one-by-one & hit enter
 
@@ -64,4 +64,3 @@ To setup uigtm in remote machine, you have to do below pre-requisites:
 ### Reference
 
 - You can watch this [demo](./video/gtm_utils_setup.mp4).
-  <a href="./video/gtm_utils_setup.mp4" target="_blank">demo</a>
