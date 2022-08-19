@@ -4,9 +4,10 @@
 
 Follow below steps to install `gtm-utils` on your machine:
 
-- [Install chocolatey](https://jcutrer.com/windows/install-chocolatey-choco-windows10) on your computer.
-- Open windows Powershell in _Administrator_ mode.
-- write `wget https://github.com/abhinath84/gtm-utils/releases/download/V1.0.0/install.sh` & hit enter.
+- [Install chocolatey](https://jcutrer.com/windows/install-chocolatey-choco-windows10) on your computer and close Powershell after installing chocolatey.
+- open another Powershell in _Administrator_ mode.
+- create new folder at your desire location & change to that directory in the shell.
+- write `curl -o install.sh https://github.com/abhinath84/gtm-utils/releases/download/V1.0.0/install.sh` & hit enter.
 - now run downloaded `install.sh` script.
 - Open another shell & execute `gtm-utils --version` command. It'll show application version and you are good to go.
 

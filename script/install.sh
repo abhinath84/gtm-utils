@@ -46,7 +46,7 @@ elif [[ $node_ver != *16.* ]]; then
 fi
 
 # install 'gtm-utils' application
-wget https://github.com/abhinath84/gtm-utils/releases/download/V1.0.0/gtm-utils.zip
+curl -o gtm-utils.zip https://github.com/abhinath84/gtm-utils/releases/download/V1.0.0/gtm-utils.zip
 unzip gtm-utils.zip
 npm install
 npm link
