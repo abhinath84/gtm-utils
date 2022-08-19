@@ -4,11 +4,21 @@
 
 Follow below steps to install `gtm-utils` on your machine:
 
-- [Install chocolatey](https://jcutrer.com/windows/install-chocolatey-choco-windows10) on your computer and close Powershell after installing chocolatey.
-- open another Powershell in _Administrator_ mode.
-- create new folder at your desire location & change to that directory in the shell.
-- write `curl -o install.sh https://github.com/abhinath84/gtm-utils/releases/download/V1.0.0/install.sh` & hit enter.
-- now run downloaded `install.sh` script.
+- Install `node.js` version `v16.14.0` or above if it's not present on you machine.
+  You can download `node.js` from [here](https://nodejs.org/en/download/)
+
+  NOTE: Execute `node --version` command to verify node installed or not.
+
+- Install `npm` by executing command: `npm install -g npm@latest`.
+
+  NOTE: Execute `npm --version` command to verify npm installed or not.
+
+- Download `gtm-utils.zip` from [v1.0.0](https://github.com/abhinath84/gtm-utils/releases/tag/V1.0.0).
+- Create a new folder & unzip downloaded zip file.
+- Open a new command terminal (shell).
+- Navigate to unzip folder in the terminal.
+- write `npm install` & hit enter.
+- write `npm link` & hit enter.
 - Open another shell & execute `gtm-utils --version` command. It'll show application version and you are good to go.
 
 ## How to run `setup` command
@@ -19,7 +29,7 @@ To setup uigtm in remote machine, you have to do below pre-requisites:
 
 - Share directory where uigtm projects will store in remote machine with write permission. That folder's share name must be `projects`.
 
-  Example: Remote uigtm project directory: `D:\ptc\uigtm` and shared directory name will be `\\anath2d\projects`.
+  Example: on remote computer uigtm project directory name would be `D:\ptc\uigtm` and shared directory name would be `\\anath2d\projects`.
 
 - Share `HOME` _environment_ variable directory in remote machine with write permission.
 
@@ -46,6 +56,8 @@ To setup uigtm in remote machine, you have to do below pre-requisites:
   > Want to copy 'run' folder?
   >
   > Want to copy 'testrun' folder?
+
+![setup](images\setup.png)
 
 - Once execution is successful, Please open UIGTM on remote machine & start using it.
 
