@@ -2,7 +2,23 @@
 
 ## How to install _gtm-utils_ application
 
-Follow below steps to install `gtm-utils` on your machine:
+Follow below steps to install `gtm-utils` on your computer:
+
+1. Install [chocolatey](https://chocolatey.org/install).(if it's not installed on your computer)
+2. Once _chocolatey_ installed, open a cygwin window in _Administrative_ mode (Run as administrator).
+3. Navigate to a directory where you want to store `install.sh` script file. (If you want you can create a new directory)
+4. Run the following command:
+
+   > wget https://github.com/abhinath84/gtm-utils/releases/download/V1.0.0/install.sh
+
+   It will download `install.sh` in current directory.
+
+5. Run the following command to install _gtm-utils_ application.
+
+   > sh ./install.sh
+
+6. Wait a few seconds for the command to complete.
+7. If you don't see any errors, you are ready to use _gtm-utils_! Type `gtm-utils` or `gtm-utls --version` now, or see below section for usage instructions.
 
 - Install `node.js` version `v16.14.0` or above if it's not present on you machine.
   You can download `node.js` from [here](https://nodejs.org/en/download/)

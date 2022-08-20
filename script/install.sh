@@ -1,12 +1,18 @@
-#!/bin/csh -f
+#!/bin/sh
 #
 # aniruddh/rishabh ; 19-Aug-22 ; Created.
 #
 #############################################################################################
 
+# https://community.chocolatey.org/packages/nodejs.install/0.10.3#versionhistory
+# choco list -localonly
+# choco uninstall <node-install-name> -dvyaf
+# choco install nodejs.install --version=0.10.3
+
 function install_node() {
     echo "### Installing node v16 lts..."
-    choco install nodejs-lts
+    # choco install -y --force nodejs.install --version=14.20.0
+    choco install -y --force nodejs-lts
 }
 
 function update_npm() {
@@ -16,8 +22,9 @@ function update_npm() {
 
 # Check if node is installed, if installed check if it is v16.
 node_ver=`node -v`
-#echo $node_ver
-if [[ -z "$node_ver" ]]; then
+echo $node_ver
+# echo $((node_ver))
+if [[ -z "$node_ver" || $node_ver != *16.* ]]; then
     # Install the node lts
     install_node
     result="$?"
@@ -35,18 +42,44 @@ if [[ -z "$node_ver" ]]; then
         exit
     fi
     echo "### NPM updated successfully."
-elif [[ $node_ver != *16.* ]]; then
-    echo "Current node version is: ${node_ver}. You need to install version 16.* or above"
-    echo "Please uninstall it. And run this script again."
-    exit
-# elif [[ $node_ver == *16.* ]]; then
-#     echo $node_ver
-#     echo "Required Node version already exists."
-#     exit
 fi
 
-# install 'gtm-utils' application
-curl -o gtm-utils.zip https://github.com/abhinath84/gtm-utils/releases/download/V1.0.0/gtm-utils.zip
+working_dir = 'pwd';
+# navigate to %APPDATA%
+cd $APPDATA
+
+# create 'gtm-utils' folder if not exists
+if [ ! -d "gtm-utils" ]; then
+   mkdir "gtm-utils"
+fi
+
+# move to that folder
+cd "gtm-utils"
+
+# remove all files/folder
+# rm -rf *
+
+# copy .zip file
+# --no-check-certificate
+echo ">> Downloading gtm-utils.zip ..."
+wget https://github.com/abhinath84/gtm-utils/releases/download/V1.0.0/gtm-utils.zip
+
+echo ""
+echo ">> Unzip gtm-utils.zip ..."
 unzip gtm-utils.zip
+
+echo ""
+echo ">> Installing node_modules ..."
 npm install
+
+echo ""
+echo ">> Linking gtm-utils ..."
 npm link
+
+echo ""
+echo ">> Removing gtm-utils.zip ..."
+echo ""
+rm -rf gtm-utils.zip
+
+# go back to working directory
+# cd $working_dir
