@@ -37,7 +37,8 @@ export const gtm: GTM = {
 
 function showFiglet() {
   // clear();
-  const figletText = figlet.textSync("              UIGTM-UTILS", { horizontalLayout: "full" });
+  // TODO: pad according to shell window width.
+  const figletText = figlet.textSync("   UIGTM-UTILS", { horizontalLayout: "full" });
   console.log(chalk.cyan(`${figletText}v${gtm.version}`));
   console.log("\n");
 }
@@ -60,30 +61,28 @@ function loadCmds(files: string[]): Promise<boolean> {
     const jsFiles = files.filter((file) => file.match(/(.*)\.js$/));
 
     // load modules
-    const promises = jsFiles.map((jsFile) => (loadModule(path.resolve(cmdDirs, jsFile))
-      .then((module) => ({
+    const promises = jsFiles.map((jsFile) =>
+      loadModule(path.resolve(cmdDirs, jsFile)).then((module) => ({
         cmd: jsFile.match(/(.*)\.js$/)![1],
-        mod: module
+        mod: module,
       }))
-    ));
-
-    return (Promise.all(promises)
-      .then((responses) => {
-        responses.forEach((response) => {
-          if (response.mod.cli) {
-            register(cli, response.mod.cli, response.cmd);
-          }
-
-          if (response.mod.api) {
-            register(api, response.mod.api, response.cmd);
-          }
-        });
-
-        return (Promise.resolve(true));
-      })
     );
+
+    return Promise.all(promises).then((responses) => {
+      responses.forEach((response) => {
+        if (response.mod.cli) {
+          register(cli, response.mod.cli, response.cmd);
+        }
+
+        if (response.mod.api) {
+          register(api, response.mod.api, response.cmd);
+        }
+      });
+
+      return Promise.resolve(true);
+    });
   }
-  return (Promise.reject(new TypeError("Unable to load commands.")));
+  return Promise.reject(new TypeError("Unable to load commands."));
 }
 
 function loadCallback(): Promise<GTM> {
@@ -92,19 +91,21 @@ function loadCallback(): Promise<GTM> {
       if (err) {
         reject(err);
       } else {
-        loadCmds(files).then((loaded) => {
-          gtm.isLoaded = loaded;
+        loadCmds(files)
+          .then((loaded) => {
+            gtm.isLoaded = loaded;
 
-          if (loaded) return (resolve(gtm));
-          return (reject(new TypeError("Fail to load command modules.")));
-        }).catch(reject);
+            if (loaded) return resolve(gtm);
+            return reject(new TypeError("Fail to load command modules."));
+          })
+          .catch(reject);
       }
     });
   });
 }
 
 function parseCallback(): Command {
-  return (parseProgram());
+  return parseProgram();
 }
 
 function actionCallback(cmd: string, options: any): void {
@@ -114,7 +115,7 @@ function actionCallback(cmd: string, options: any): void {
   if (cli[cmd]) {
     cli[cmd].apply(null, [options]).catch(errorHandler);
   } else {
-    throw (new TypeError(`${cmd} is not present in 'gtm' module.`));
+    throw new TypeError(`${cmd} is not present in 'gtm' module.`);
   }
 }
 
