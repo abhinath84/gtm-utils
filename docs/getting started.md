@@ -66,3 +66,4 @@ Below points to be executed on remote machine(example: CoLo machine) where you w
 - You can watch this [demo](./video/gtm_utils_setup.mp4){:target="_blank"}.
 - <a href="http://google.com" target="_blank">Hello, world!</a>
 - [demo](http://google.com){:target="_blank"}
+- <a href="http://google.com" target="_blank" rel="noopener">Link</a>
