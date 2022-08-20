@@ -77,8 +77,10 @@ npm link
 
 echo ""
 echo ">> Removing gtm-utils.zip ..."
-echo ""
 rm -rf gtm-utils.zip
 
+echo ""
+echo ">> Installation completed ..."
+echo ""
 # go back to working directory
 # cd $working_dir
