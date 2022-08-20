@@ -63,4 +63,4 @@ Below points to be executed on remote machine(example: CoLo machine) where you w
 
 ### Reference
 
-- You can watch this [demo](./video/gtm_utils_setup.mp4){:target="\_blank" rel="noopener"}.
+- You can watch this [demo](./video/gtm_utils_setup.mp4){:target="_blank" rel="noopener"}.
