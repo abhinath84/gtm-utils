@@ -22,8 +22,7 @@ function update_npm() {
 
 # Check if node is installed, if installed check if it is v16.
 node_ver=`node -v`
-echo $node_ver
-# echo $((node_ver))
+# echo $node_ver
 if [[ -z "$node_ver" || $node_ver != *16.* ]]; then
     # Install the node lts
     install_node
@@ -44,7 +43,7 @@ if [[ -z "$node_ver" || $node_ver != *16.* ]]; then
     echo "### NPM updated successfully."
 fi
 
-working_dir = 'pwd';
+# working_dir = `pwd`;
 # navigate to %APPDATA%
 cd $APPDATA
 
@@ -57,7 +56,7 @@ fi
 cd "gtm-utils"
 
 # remove all files/folder
-# rm -rf *
+rm -rf *
 
 # copy .zip file
 # --no-check-certificate
