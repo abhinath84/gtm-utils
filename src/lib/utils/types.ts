@@ -1,14 +1,18 @@
 "use strict";
 
-export type SetupInputs = {
-  hostname: string;
-  homeDir: string;
+export type GTMInput = {
   projectPath: string;
   localLibsPath: string;
   copyX86e: boolean;
   copyRun: boolean;
   copyTestrun: boolean;
-  copyData: boolean
+  copyData: boolean;
+};
+
+export type SetupInputs = {
+  hostname: string;
+  homeDir: string;
+  gtmInput: GTMInput;
 };
 
 export type ExportInput = {
@@ -18,6 +22,5 @@ export type ExportInput = {
 
 export type ImportInput = {
   source: string;
-  projectPath: string;
-  copyX86e: boolean;
+  gtmInput: GTMInput;
 };

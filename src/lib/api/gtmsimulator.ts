@@ -6,7 +6,7 @@ import * as fsp from "fs/promises";
 import os from "os";
 
 import { SetupInputs, ImportInput, ExportInput } from "../utils/types.js";
-import { ReadFileMiddleware, ReadLineMiddleware, Stream } from "../utils/istream.js";
+// import { ReadFileMiddleware, ReadLineMiddleware, Stream } from "../utils/istream.js";
 import { GTMRead, GTMWrite, ReadMiddleware, GTMStream } from "./gtmstream.js";
 import { Utils } from "../utils/utility.js";
 import { UsageError } from "../core/errors.js";
@@ -37,24 +37,27 @@ function displayDuration(start: Date, end: Date) {
   const duration = end.getTime() - start.getTime();
   const hms = Utils.formatToHMS(duration);
 
-  const hmsStr = `Duration(H:M:S) : ${padTo2Digits(hms.hr)}:${padTo2Digits(hms.min)}:${padTo2Digits(hms.sec)}`;
+  const sHr = `${padTo2Digits(hms.hr)}`;
+  const sMin = `${padTo2Digits(hms.min)}`;
+  const sSec = `${padTo2Digits(hms.sec)}`;
+  const sMS = `${padTo2Digits(hms.msec)}`;
+  const hmsStr = `Duration(H:M:S::MS): ${sHr}:${sMin}:${sSec}::${sMS}`;
+
   Utils.display(hmsStr);
 }
 
 export class GTMSimulator {
   private mGTMInfos: GTMFileInfo[];
-
-  // private mHome: string;
+  private mGTMFile: string;
   private mProjectsPath: string;
   private mLocalLibsPath: string;
   private mHomeReadPath: string;
   private mHomeWritePath: string;
-
   private mCopyErrors: Error[];
 
   constructor() {
     this.mGTMInfos = [];
-    // this.mHome = process.env.HOME || "";
+    this.mGTMFile = "uigtm.json";
     this.mProjectsPath = "";
     this.mLocalLibsPath = "";
     this.mHomeReadPath = "";
@@ -78,8 +81,8 @@ export class GTMSimulator {
 
     this.mHomeReadPath = process.env.HOME;
     this.mHomeWritePath = remoteHomeDir;
-    this.mProjectsPath = input.projectPath;
-    this.mLocalLibsPath = input.localLibsPath;
+    this.mProjectsPath = input.gtmInput.projectPath;
+    this.mLocalLibsPath = input.gtmInput.localLibsPath;
 
     const start = new Date();
     // read from local home directory
@@ -91,10 +94,10 @@ export class GTMSimulator {
     const remoteProjectsPath = `\\\\${input.hostname}\\projects`;
     const projects = this.find(".gtconfig")?.content?.projects.split(" ");
     const options = {
-      copyX86e: input.copyX86e,
-      copyRun: input.copyRun,
-      copyTestrun: input.copyTestrun,
-      copyData: input.copyData,
+      copyX86e: input.gtmInput.copyX86e,
+      copyRun: input.gtmInput.copyRun,
+      copyTestrun: input.gtmInput.copyTestrun,
+      copyData: input.gtmInput.copyData,
     };
     await this.copy(localProjectsPath, remoteProjectsPath, projects, options);
 
@@ -111,8 +114,50 @@ export class GTMSimulator {
     return Promise.resolve(`Setup UIGTM is Completed on "${input.hostname}"!`);
   }
 
-  // export(input: ExportInput) {
-  // }
+  async export(input: ExportInput): Promise<void> {
+    if (process.env.HOME === undefined || process.env.HOME.length <= 0) {
+      throw new UsageError("local HOME environment variable is not set.");
+    }
+
+    const start = new Date();
+
+    // read from local home directory
+    this.mHomeReadPath = process.env.HOME;
+    await this.readFromHome();
+
+    Utils.display("");
+    // export
+    const exportObj: any = {};
+
+    // accumulating data.
+    exportObj.hostname = os.hostname();
+    this.mGTMInfos.forEach((elem) => {
+      // remove . from filename.
+      // const filename = elem.filename.slice(1); //elem.filename.split(".")[1];
+      exportObj[elem.filename] = elem.content;
+    });
+
+    // write to file
+    const obj: GTMWrite = {
+      file: (input.exportInWorkingDir) ? this.mGTMFile : path.join(input.destination, this.mGTMFile),
+      middleware: (writer: fs.WriteStream): void => {
+        // this.content.data
+        const content = JSON.stringify(exportObj, null, "\t");
+        writer.write(content);
+      },
+    };
+    await GTMStream.write(obj);
+
+    Utils.display("");
+    // display duration
+    const end = new Date();
+    displayDuration(start, end);
+
+    Utils.display("");
+    Utils.display("Exported successful !!!");
+
+    return Promise.resolve();
+  }
 
   // import(input: ImportInput) {
   // }

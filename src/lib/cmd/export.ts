@@ -5,6 +5,7 @@ import inquirer, { QuestionCollection, Answers } from "inquirer";
 import { ExportInput } from "../utils/types.js";
 import { UsageError } from "../core/errors.js";
 import { Utils } from "../utils/utility.js";
+import { GTMSimulator } from "../api/gtmsimulator.js";
 
 function validateOption(input: ExportInput): string[] {
   const msgs: string[] = [];
@@ -16,7 +17,7 @@ function validateOption(input: ExportInput): string[] {
     }
   }
 
-  return (msgs);
+  return msgs;
 }
 
 function ask(): Promise<any> {
@@ -25,7 +26,7 @@ function ask(): Promise<any> {
       type: "confirm",
       name: "exportInWorkingDir",
       message: "Export in Working directory?",
-      default: true
+      default: true,
     },
     {
       type: "input",
@@ -46,49 +47,36 @@ function ask(): Promise<any> {
 
         // TODO: how to verify proper hostname
         return "Please enter destination directory";
-      }
-    }
+      },
+    },
   ];
 
-  return (inquirer.prompt(questions));
+  return inquirer.prompt(questions);
 }
 
-const api = (input: ExportInput):Promise<string> => {
+const api = (input: ExportInput): Promise<void> => {
   const errors = validateOption(input);
   if (errors.length > 0) {
-    throw (new UsageError(`${errors.join("\n")}`));
+    throw new UsageError(`${errors.join("\n")}`);
   }
 
-  Utils.display(input);
-  return (Promise.resolve("In-progress!"));
+  const simulator = new GTMSimulator();
+  return simulator.export(input);
 };
 
-// const cli = (): Promise<string> => (
-//   // enquire user input
-//   ask()
-//     .then((answers: Answers) => {
-//       Utils.display("\n");
+const cli = (): Promise<void> =>
+  // enquire user input
+  ask().then((answers: Answers) => {
+    Utils.display("\n");
 
-//       // validate command options
-//       const input = {
-//         exportInWorkingDir: answers.exportInWorkingDir,
-//         destination: answers.destination
-//       };
+    // validate command options
+    const input = {
+      exportInWorkingDir: answers.exportInWorkingDir,
+      destination: answers.destination,
+    };
 
-//       // call 'run' api.
-//       return (
-//         api(input)
-//           .then((response) => {
-//             Utils.display(response);
-//             return (Promise.resolve(response));
-//           })
-//       );
-//     })
-// );
-
-const cli = (): Promise<string> => {
-  Utils.display("In-progress !!!");
-  return (Promise.resolve("In-progress !!!"));
-};
+    // call 'run' api.
+    return api(input);
+  });
 
 export { api, cli };

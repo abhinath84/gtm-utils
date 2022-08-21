@@ -26,25 +26,24 @@ function accessible(dir: string, mode: number) {
       accessSync(dir, mode);
       state = true;
     } catch (err) {
-      console.log(err);
       state = false;
     }
   }
 
-  return (state);
+  return state;
 }
 
 const FilesystemStream = {
   exists(fileOrDir: string): boolean {
     const state = false;
 
-    return (state);
+    return state;
   },
   writable(sharedPath: string): boolean {
-    return (accessible(sharedPath, constants.W_OK));
+    return accessible(sharedPath, constants.W_OK);
   },
   readable(sharedPath: string): boolean {
-    return (accessible(sharedPath, constants.R_OK));
+    return accessible(sharedPath, constants.R_OK);
   },
   validate(dir: string): boolean {
     let state = false;
@@ -54,8 +53,8 @@ const FilesystemStream = {
       if (pass) state = true;
     }
 
-    return (state);
-  }
+    return state;
+  },
 };
 
 const Utils = {
@@ -80,11 +79,7 @@ const Utils = {
    * @param {string} replace The replace string
    * @returns {string} Replaced {@link origin} string
    */
-  replaceAll(
-    origin: string,
-    search: string,
-    replace: string
-  ): string {
+  replaceAll(origin: string, search: string, replace: string): string {
     return origin.split(search).join(replace);
   },
 
@@ -100,11 +95,7 @@ const Utils = {
    * @param {string} replace The replace string
    * @returns {string} Formatted string.
    */
-  format(
-    original: string,
-    key: string,
-    replace: string
-  ): string {
+  format(original: string, key: string, replace: string): string {
     const tmp = `__{{${key}}}__`;
 
     return this.replaceAll(original, tmp, replace);
@@ -119,8 +110,8 @@ const Utils = {
    *
    * @returns {string} current file name with full-path.
    */
-  filename(url:string): string {
-    return (fileURLToPath(url));
+  filename(url: string): string {
+    return fileURLToPath(url);
   },
 
   /**
@@ -132,56 +123,58 @@ const Utils = {
    *
    * @returns {string} current directory path.
    */
-  dirname(url:string): string {
+  dirname(url: string): string {
     const name = path.dirname(this.filename(url));
-    return (name);
+    return name;
   },
 
   packageJson(): any {
     const pkg = require("../../../../package.json");
-    return (pkg);
+    return pkg;
   },
 
-  getEnv(name: string): string|undefined {
+  getEnv(name: string): string | undefined {
     if (name && name.length > 0) {
-      return (process.env[name]);
+      return process.env[name];
     }
-    return (undefined);
+    return undefined;
   },
 
   cmdUsageHelpMsg(name: string): string {
     if (name) {
-      return (`Please check Usage for '${name}' command using below:
-$ gtm-utils help ${name}`);
+      return `Please check Usage for '${name}' command using below:
+$ gtm-utils help ${name}`;
     }
-    return ("");
+    return "";
   },
 
-  formatToHMS(milliseconds: number): {hr: number, min: number, sec: number} {
+  formatToHMS(milliseconds: number): { hr: number; min: number; sec: number; msec: number } {
     let seconds = Math.floor(milliseconds / 1000);
+    let msec = milliseconds % 1000;
     let minutes = Math.floor(seconds / 60);
     let hours = Math.floor(minutes / 60);
-  
+
     seconds %= 60;
     // 👇️ if seconds are greater than 30, round minutes up (optional)
     minutes = seconds >= 30 ? minutes + 1 : minutes;
-  
+
     minutes %= 60;
-  
+
     // 👇️ If you don't want to roll hours over, e.g. 24 to 00
     // 👇️ comment (or remove) the line below
     // commenting next line gets you `24:00:00` instead of `00:00:00`
     // or `36:15:31` instead of `12:15:31`, etc.
     hours %= 24;
-  
-    return { hr: hours, min: minutes, sec: seconds };
+
+    return { hr: hours, min: minutes, sec: seconds, msec };
   },
 
   display(msg: any): void {
+    // eslint-disable-next-line no-console
     console.log(msg);
   },
 
-  FilesystemStream
+  FilesystemStream,
 };
 
 export { Utils };

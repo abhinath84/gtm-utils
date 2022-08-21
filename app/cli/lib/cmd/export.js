@@ -2,6 +2,7 @@
 import inquirer from "inquirer";
 import { UsageError } from "../core/errors.js";
 import { Utils } from "../utils/utility.js";
+import { GTMSimulator } from "../api/gtmsimulator.js";
 function validateOption(input) {
     const msgs = [];
     // check '\\<hostname>\projects is accessible or not
@@ -10,7 +11,7 @@ function validateOption(input) {
             msgs.push(`Unable to access '${input.destination}'.`);
         }
     }
-    return (msgs);
+    return msgs;
 }
 function ask() {
     const questions = [
@@ -18,7 +19,7 @@ function ask() {
             type: "confirm",
             name: "exportInWorkingDir",
             message: "Export in Working directory?",
-            default: true
+            default: true,
         },
         {
             type: "input",
@@ -39,42 +40,30 @@ function ask() {
                 }
                 // TODO: how to verify proper hostname
                 return "Please enter destination directory";
-            }
-        }
+            },
+        },
     ];
-    return (inquirer.prompt(questions));
+    return inquirer.prompt(questions);
 }
 const api = (input) => {
     const errors = validateOption(input);
     if (errors.length > 0) {
-        throw (new UsageError(`${errors.join("\n")}`));
+        throw new UsageError(`${errors.join("\n")}`);
     }
-    Utils.display(input);
-    return (Promise.resolve("In-progress!"));
+    const simulator = new GTMSimulator();
+    return simulator.export(input);
 };
-// const cli = (): Promise<string> => (
-//   // enquire user input
-//   ask()
-//     .then((answers: Answers) => {
-//       Utils.display("\n");
-//       // validate command options
-//       const input = {
-//         exportInWorkingDir: answers.exportInWorkingDir,
-//         destination: answers.destination
-//       };
-//       // call 'run' api.
-//       return (
-//         api(input)
-//           .then((response) => {
-//             Utils.display(response);
-//             return (Promise.resolve(response));
-//           })
-//       );
-//     })
-// );
-const cli = () => {
-    Utils.display("In-progress !!!");
-    return (Promise.resolve("In-progress !!!"));
-};
+const cli = () => 
+// enquire user input
+ask().then((answers) => {
+    Utils.display("\n");
+    // validate command options
+    const input = {
+        exportInWorkingDir: answers.exportInWorkingDir,
+        destination: answers.destination,
+    };
+    // call 'run' api.
+    return api(input);
+});
 export { api, cli };
 //# sourceMappingURL=export.js.map

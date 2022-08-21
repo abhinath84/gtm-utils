@@ -22,7 +22,7 @@ function validateOption(input: SetupInputs): string[] {
   //   msgs.push(`Unable to access '${homePath}'.Either this folder is not shared or doesn't have write permission`);
   // }
 
-  return (msgs);
+  return msgs;
 }
 
 function ask(): Promise<any> {
@@ -39,7 +39,7 @@ function ask(): Promise<any> {
 
         // TODO: how to verify proper hostname
         return "Please enter remote host(machine) name";
-      }
+      },
     },
     {
       type: "input",
@@ -53,7 +53,7 @@ function ask(): Promise<any> {
 
         // TODO: how to verify proper hostname
         return "Please enter remote HOME environment directory name";
-      }
+      },
     },
     {
       type: "input",
@@ -68,91 +68,86 @@ function ask(): Promise<any> {
 
         // TODO: how to verify proper hostname
         return "Please enter path for projects in remote host";
-      }
+      },
     },
     {
       type: "input",
       name: "remote_lacalLibspath",
-      message: "Path to local libraries in remote host",
-      validate(value: string) {
-        if (value.length > 0) {
-          // check valid folder path
-          if (Utils.FilesystemStream.validate(value)) return true;
-          return "Please enter valid path to local libraries in remote host";
-        }
-
-        // TODO: how to verify proper hostname
-        return "Please enter path to local libraries in remote host";
-      }
+      message: "Path to local libraries in remote host (Optional)",
+      default() {
+        return "";
+      },
     },
     {
       type: "confirm",
       name: "copyX86e",
       message: "Want to copy 'x86e_win64' folder?",
-      default: false
+      default: false,
     },
     {
       type: "confirm",
       name: "copyRun",
-      message: "Want to copy content of 'run' folder?",
-      default: true
+      message: "Want to copy contents of 'run' folder?",
+      default: true,
     },
     {
       type: "confirm",
       name: "copyTestrun",
-      message: "Want to copy content of 'testrun' folder?",
-      default: true
+      message: "Want to copy contents of 'testrun' folder?",
+      default: true,
     },
     {
       type: "confirm",
       name: "copyData",
-      message: "Want to copy content of 'Data' folder?",
-      default: true
-    }
+      message: "Want to copy contents of 'data' folder?",
+      default: true,
+    },
   ];
 
-  return (inquirer.prompt(questions));
+  return inquirer.prompt(questions);
 }
 
 const api = (input: SetupInputs): Promise<string> => {
   const errors = validateOption(input);
   if (errors.length > 0) {
-    throw (new UsageError(`${errors.join("\n")}`));
+    throw new UsageError(`${errors.join("\n")}`);
   }
 
   const simulator = new GTMSimulator();
-  return (simulator.setup(input));
+  return simulator.setup(input);
 };
 
 // eslint-disable-next-line no-promise-executor-return
-const cli = (/* option: any */): Promise<string> => (new Promise((resolve, reject) => (ask()
-  .then((answers) => {
-    // Utils.display(JSON.stringify(answers, null, "\t"));
-    Utils.display("\n");
+const cli = (/* option: any */): Promise<string> =>
+  new Promise((resolve, reject) =>
+    ask()
+      .then((answers) => {
+        // Utils.display(JSON.stringify(answers, null, "\t"));
+        Utils.display("\n");
 
-    // validate command options
-    const input = {
-      hostname: answers.remote_host,
-      homeDir: answers.remote_homedir,
-      projectPath: answers.remote_projectpath,
-      localLibsPath: answers.remote_lacalLibspath,
-      copyX86e: answers.copyX86e,
-      copyRun: answers.copyRun,
-      copyTestrun: answers.copyTestrun,
-      copyData: answers.copyData
-    };
+        // validate command options
+        const input = {
+          hostname: answers.remote_host,
+          homeDir: answers.remote_homedir,
+          gtmInput: {
+            projectPath: answers.remote_projectpath,
+            localLibsPath: answers.remote_lacalLibspath,
+            copyX86e: answers.copyX86e,
+            copyRun: answers.copyRun,
+            copyTestrun: answers.copyTestrun,
+            copyData: answers.copyData
+          }
+        };
 
-    // call 'run' api.
-    return (
-      api(input)
-        .then((response) => {
-          Utils.display(response);
-          resolve(response);
-        })
-        .catch(reject)
-    );
-  })
-  .catch(reject)
-)));
+        // call 'run' api.
+        return api(input)
+          .then((response) => {
+            Utils.display(response);
+            resolve(response);
+          })
+          .catch(reject);
+      })
+      .catch(reject)
+  );
 
 export { api, cli };

@@ -19,22 +19,21 @@ function accessible(dir, mode) {
             state = true;
         }
         catch (err) {
-            console.log(err);
             state = false;
         }
     }
-    return (state);
+    return state;
 }
 const FilesystemStream = {
     exists(fileOrDir) {
         const state = false;
-        return (state);
+        return state;
     },
     writable(sharedPath) {
-        return (accessible(sharedPath, constants.W_OK));
+        return accessible(sharedPath, constants.W_OK);
     },
     readable(sharedPath) {
-        return (accessible(sharedPath, constants.R_OK));
+        return accessible(sharedPath, constants.R_OK);
     },
     validate(dir) {
         let state = false;
@@ -43,8 +42,8 @@ const FilesystemStream = {
             if (pass)
                 state = true;
         }
-        return (state);
-    }
+        return state;
+    },
 };
 const Utils = {
     /**
@@ -95,7 +94,7 @@ const Utils = {
      * @returns {string} current file name with full-path.
      */
     filename(url) {
-        return (fileURLToPath(url));
+        return fileURLToPath(url);
     },
     /**
      * Replica of __dirname variable. It'll be used when building
@@ -108,27 +107,28 @@ const Utils = {
      */
     dirname(url) {
         const name = path.dirname(this.filename(url));
-        return (name);
+        return name;
     },
     packageJson() {
         const pkg = require("../../../../package.json");
-        return (pkg);
+        return pkg;
     },
     getEnv(name) {
         if (name && name.length > 0) {
-            return (process.env[name]);
+            return process.env[name];
         }
-        return (undefined);
+        return undefined;
     },
     cmdUsageHelpMsg(name) {
         if (name) {
-            return (`Please check Usage for '${name}' command using below:
-$ gtm-utils help ${name}`);
+            return `Please check Usage for '${name}' command using below:
+$ gtm-utils help ${name}`;
         }
-        return ("");
+        return "";
     },
     formatToHMS(milliseconds) {
         let seconds = Math.floor(milliseconds / 1000);
+        let msec = milliseconds % 1000;
         let minutes = Math.floor(seconds / 60);
         let hours = Math.floor(minutes / 60);
         seconds %= 60;
@@ -140,12 +140,13 @@ $ gtm-utils help ${name}`);
         // commenting next line gets you `24:00:00` instead of `00:00:00`
         // or `36:15:31` instead of `12:15:31`, etc.
         hours %= 24;
-        return { hr: hours, min: minutes, sec: seconds };
+        return { hr: hours, min: minutes, sec: seconds, msec };
     },
     display(msg) {
+        // eslint-disable-next-line no-console
         console.log(msg);
     },
-    FilesystemStream
+    FilesystemStream,
 };
 export { Utils };
 //# sourceMappingURL=utility.js.map

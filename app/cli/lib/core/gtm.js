@@ -24,8 +24,8 @@ function showFiglet() {
     // clear();
     // TODO: pad according to shell window width.
     const figletText = figlet.textSync("   UIGTM-UTILS", { horizontalLayout: "full" });
-    console.log(chalk.cyan(`${figletText}v${gtm.version}`));
-    console.log("\n");
+    Utils.display(chalk.cyan(`${figletText}v${gtm.version}`));
+    Utils.display("\n");
 }
 // TODO: replace value: any to value: Object|Function
 function register(parent, child, cmd) {
