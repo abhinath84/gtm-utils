@@ -69,7 +69,8 @@ unzip gtm-utils.zip
 
 echo ""
 echo ">> Installing node_modules ..."
-npm install
+# npm install
+npm install --production
 
 echo ""
 echo ">> Linking gtm-utils ..."
