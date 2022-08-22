@@ -34,7 +34,7 @@ if [[ -z "$node_ver" || $node_ver != *16.* ]]; then
     echo "### Node installed successfully."
     
     # add nodejs path to PATH environment variable
-    PATH="C:/Program Files/nodejs":$PATH
+    PATH="$PROGRAMFILES/nodejs":$PATH
 
     # Update the NPM
     update_npm
