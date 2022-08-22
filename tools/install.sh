@@ -61,7 +61,8 @@ rm -rf *
 # copy .zip file
 # --no-check-certificate
 echo ">> Downloading gtm-utils.zip ..."
-wget https://github.com/abhinath84/gtm-utils/releases/download/V1.0.0/gtm-utils.zip
+# wget https://github.com/abhinath84/gtm-utils/releases/download/V1.0.0/gtm-utils.zip
+curl -LJO https://github.com/abhinath84/gtm-utils/releases/download/V1.0.0/gtm-utils.zip
 
 echo ""
 echo ">> Unzip gtm-utils.zip ..."

@@ -5,6 +5,7 @@ import inquirer, { QuestionCollection, Answers } from "inquirer";
 import { ImportInput } from "../utils/types.js";
 import { UsageError } from "../core/errors.js";
 import { Utils } from "../utils/utility.js";
+import { GTMSimulator } from "../api/gtmsimulator.js";
 
 function validateOption(input: ImportInput): string[] {
   const msgs: string[] = [];
@@ -60,36 +61,36 @@ function ask(): Promise<any> {
   return (inquirer.prompt(questions));
 }
 
-const api = (input: ImportInput):Promise<string> => {
+const api = (input: ImportInput): Promise<void> => {
   const errors = validateOption(input);
   if (errors.length > 0) {
-    throw (new UsageError(`${errors.join("\n")}`));
+    throw new UsageError(`${errors.join("\n")}`);
   }
 
-  Utils.display(input);
-  return (Promise.resolve("In-progress!"));
+  const simulator = new GTMSimulator();
+  return simulator.import(input);
 };
 
-// const cli = (): Promise<string> => (
-//   // enquire user input
-//   ask()
-//     .then((answers: Answers) => {
-//       Utils.display("\n");
+const cli = (): Promise<void> =>
+  // enquire user input
+  ask().then((answers: Answers) => {
+    Utils.display("\n");
 
-//       // call 'run' api.
-//       return (
-//         api({ source: answers.source, projectPath: answers.projectPath, copyX86e: answers.copyX86e })
-//           .then((response) => {
-//             Utils.display(response);
-//             return (Promise.resolve(response));
-//           })
-//       );
-//     })
-// );
+    // validate command options
+    const input = {
+      source: answers.source,
+      gtmInput: {
+        projectPath: answers.remote_projectpath,
+        localLibsPath: answers.remote_lacalLibspath,
+        copyX86e: answers.copyX86e,
+        copyRun: answers.copyRun,
+        copyTestrun: answers.copyTestrun,
+        copyData: answers.copyData
+      }
+    };
 
-const cli = (): Promise<string> => {
-  Utils.display("In-progress !!!");
-  return (Promise.resolve("In-progress !!!"));
-};
+    // call 'run' api.
+    return api(input);
+  });
 
 export { api, cli };

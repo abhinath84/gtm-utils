@@ -2,6 +2,7 @@
 import inquirer from "inquirer";
 import { UsageError } from "../core/errors.js";
 import { Utils } from "../utils/utility.js";
+import { GTMSimulator } from "../api/gtmsimulator.js";
 function validateOption(input) {
     const msgs = [];
     // check source directory is accessible or not
@@ -54,29 +55,29 @@ function ask() {
 const api = (input) => {
     const errors = validateOption(input);
     if (errors.length > 0) {
-        throw (new UsageError(`${errors.join("\n")}`));
+        throw new UsageError(`${errors.join("\n")}`);
     }
-    Utils.display(input);
-    return (Promise.resolve("In-progress!"));
+    const simulator = new GTMSimulator();
+    return simulator.import(input);
 };
-// const cli = (): Promise<string> => (
-//   // enquire user input
-//   ask()
-//     .then((answers: Answers) => {
-//       Utils.display("\n");
-//       // call 'run' api.
-//       return (
-//         api({ source: answers.source, projectPath: answers.projectPath, copyX86e: answers.copyX86e })
-//           .then((response) => {
-//             Utils.display(response);
-//             return (Promise.resolve(response));
-//           })
-//       );
-//     })
-// );
-const cli = () => {
-    Utils.display("In-progress !!!");
-    return (Promise.resolve("In-progress !!!"));
-};
+const cli = () => 
+// enquire user input
+ask().then((answers) => {
+    Utils.display("\n");
+    // validate command options
+    const input = {
+        source: answers.source,
+        gtmInput: {
+            projectPath: answers.remote_projectpath,
+            localLibsPath: answers.remote_lacalLibspath,
+            copyX86e: answers.copyX86e,
+            copyRun: answers.copyRun,
+            copyTestrun: answers.copyTestrun,
+            copyData: answers.copyData
+        }
+    };
+    // call 'run' api.
+    return api(input);
+});
 export { api, cli };
 //# sourceMappingURL=import.js.map

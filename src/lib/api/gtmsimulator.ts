@@ -159,8 +159,56 @@ export class GTMSimulator {
     return Promise.resolve();
   }
 
-  // import(input: ImportInput) {
-  // }
+  async import(input: ImportInput): Promise<void> {
+    // TODO: validate input's access.
+    if (process.env.HOME === undefined || process.env.HOME.length <= 0) {
+      throw new UsageError("local HOME environment variable is not set.");
+    }
+
+    // TODO: replace '\\' with path.separator()
+    const remoteHomeDir = `\\\\${input.hostname}\\${input.homeDir}`;
+    if (!Utils.FilesystemStream.writable(remoteHomeDir)) {
+      throw new UsageError(`${remoteHomeDir} doesn't have write permission.`);
+    }
+
+    this.mHomeReadPath = process.env.HOME;
+    this.mHomeWritePath = remoteHomeDir;
+    this.mProjectsPath = input.gtmInput.projectPath;
+    this.mLocalLibsPath = input.gtmInput.localLibsPath;
+
+    const start = new Date();
+    // read from local home directory
+    await this.readFromHome();
+
+    Utils.display("");
+    // copy projects
+    const localProjectsPath = `\\\\${os.hostname()}\\projects`;
+    const remoteProjectsPath = `\\\\${input.hostname}\\projects`;
+    const projects = this.find(".gtconfig")?.content?.projects.split(" ");
+    const options = {
+      copyX86e: input.gtmInput.copyX86e,
+      copyRun: input.gtmInput.copyRun,
+      copyTestrun: input.gtmInput.copyTestrun,
+      copyData: input.gtmInput.copyData,
+    };
+    await this.copy(localProjectsPath, remoteProjectsPath, projects, options);
+
+    Utils.display("");
+    // write to remote home directory
+    await this.writeToHome();
+
+    Utils.display("");
+    // display duration
+    const end = new Date();
+    displayDuration(start, end);
+
+    Utils.display("");
+    return Promise.resolve(`Setup UIGTM is Completed on "${input.hostname}"!`);
+        
+    Utils.display("In-progress !!!");
+
+    return (Promise.resolve());
+  }
 
   private init() {
     GTMRELATEDFILES.forEach((file) => this.mGTMInfos.push({ filename: file, content: {} }));
