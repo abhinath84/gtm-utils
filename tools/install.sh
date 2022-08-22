@@ -25,8 +25,7 @@ node_ver=`node -v`
 # echo $node_ver
 if [[ -z "$node_ver" || $node_ver != *16.* ]]; then
     # Install the node lts
-    # install_node
-    choco install -y --force nodejs-lts
+    install_node
     result="$?"
     if [ "$result" -ne 0 ]; then
         echo "!!! Node installation failed."
@@ -34,11 +33,11 @@ if [[ -z "$node_ver" || $node_ver != *16.* ]]; then
     fi
     echo "### Node installed successfully."
     
+    # add nodejs path to PATH environment variable
     PATH="C:/Program Files/nodejs":$PATH
 
     # Update the NPM
-    # update_npm
-    npm install -g npm@latest
+    update_npm
     result2="$?"
     if [ "$result2" -ne 0 ]; then
         echo "!!! NPM update failed."
