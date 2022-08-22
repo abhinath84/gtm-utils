@@ -9,23 +9,24 @@
 # choco uninstall <node-install-name> -dvyaf
 # choco install nodejs.install --version=0.10.3
 
-function install_node() {
-    echo "### Installing node v16 lts..."
-    # choco install -y --force nodejs.install --version=14.20.0
-    choco install -y --force nodejs-lts
-}
+# function install_node() {
+#     echo "### Installing node v16 lts..."
+#     # choco install -y --force nodejs.install --version=14.20.0
+#     choco install -y --force nodejs-lts
+# }
 
-function update_npm() {
-    echo "### Installing latest npm..."
-    npm install -g npm@latest
-}
+# function update_npm() {
+#     echo "### Installing latest npm..."
+#     npm install -g npm@latest
+# }
 
 # Check if node is installed, if installed check if it is v16.
 node_ver=`node -v`
 # echo $node_ver
 if [[ -z "$node_ver" || $node_ver != *16.* ]]; then
     # Install the node lts
-    install_node
+    # install_node
+    choco install -y --force nodejs-lts
     result="$?"
     if [ "$result" -ne 0 ]; then
         echo "!!! Node installation failed."
@@ -33,8 +34,11 @@ if [[ -z "$node_ver" || $node_ver != *16.* ]]; then
     fi
     echo "### Node installed successfully."
     
+    PATH="C:/Program Files/nodejs":$PATH
+
     # Update the NPM
-    update_npm
+    # update_npm
+    npm install -g npm@latest
     result2="$?"
     if [ "$result2" -ne 0 ]; then
         echo "!!! NPM update failed."
@@ -61,8 +65,8 @@ rm -rf *
 # copy .zip file
 # --no-check-certificate
 echo ">> Downloading gtm-utils.zip ..."
-# wget https://github.com/abhinath84/gtm-utils/releases/download/V1.0.0/gtm-utils.zip
-curl -LJO https://github.com/abhinath84/gtm-utils/releases/download/V1.0.0/gtm-utils.zip
+wget https://github.com/abhinath84/gtm-utils/releases/download/V1.0.0/gtm-utils.zip
+# curl -LJO https://github.com/abhinath84/gtm-utils/releases/download/V1.0.0/gtm-utils.zip
 
 echo ""
 echo ">> Unzip gtm-utils.zip ..."
