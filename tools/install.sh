@@ -9,16 +9,16 @@
 # choco uninstall <node-install-name> -dvyaf
 # choco install nodejs.install --version=0.10.3
 
-# function install_node() {
-#     echo "### Installing node v16 lts..."
-#     # choco install -y --force nodejs.install --version=14.20.0
-#     choco install -y --force nodejs-lts
-# }
+function install_node() {
+    echo "### Installing node v16 lts..."
+    # choco install -y --force nodejs.install --version=14.20.0
+    choco install -y --force nodejs-lts
+}
 
-# function update_npm() {
-#     echo "### Installing latest npm..."
-#     npm install -g npm@latest
-# }
+function update_npm() {
+    echo "### Installing latest npm..."
+    npm install -g npm@latest
+}
 
 # Check if node is installed, if installed check if it is v16.
 node_ver=`node -v`
