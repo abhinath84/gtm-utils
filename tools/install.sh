@@ -10,13 +10,13 @@
 # choco install nodejs.install --version=0.10.3
 
 function install_node() {
-  echo "### Installing node v16 lts..."
+  echo ">>> Installing node v16 lts..."
   # choco install -y --force nodejs.install --version=14.20.0
   choco install -y --force nodejs-lts
 }
 
 function update_npm() {
-  echo "### Installing latest npm..."
+  echo ">>> Installing latest npm..."
   npm install -g npm@latest
 }
 
