@@ -200,8 +200,8 @@ export class GTMSimulator {
     }
     readConfigFile() {
         const filename = ".gtconfig";
-        const projectsPath = this.mProjectsPath;
-        const localLibsPath = this.mLocalLibsPath;
+        // const projectsPath = this.mProjectsPath;
+        // const localLibsPath = this.mLocalLibsPath;
         const middleware = {
             content: {},
             type: "line",
@@ -218,7 +218,7 @@ export class GTMSimulator {
                         this.content.projects = content;
                         break;
                     case 5:
-                        this.content.local_libs = localLibsPath;
+                        this.content.local_libs = content;
                         break;
                     case 6:
                         this.content.ref_sys = content;
@@ -230,7 +230,7 @@ export class GTMSimulator {
                         this.content.user_full_name = content;
                         break;
                     case 10:
-                        this.content.project_path = projectsPath;
+                        this.content.project_path = content;
                         break;
                     case 12:
                         this.content.file_diff = content;
@@ -582,6 +582,7 @@ export class GTMSimulator {
         return (true);
     }
     readImportFile(filename) {
+        Utils.display(`Reading ${filename} ...`);
         const middleware = (content) => {
             const jsonObj = JSON.parse(content);
             // validate import object
@@ -707,6 +708,8 @@ export class GTMSimulator {
     }
     writeConfigFile() {
         const filename = ".gtconfig";
+        const projectsPath = this.mProjectsPath;
+        const localLibsPath = this.mLocalLibsPath;
         const obj = {
             file: this.resolveWriteHome(filename),
             middleware: (writer) => {
@@ -716,12 +719,12 @@ export class GTMSimulator {
                 writer.write(`${content.editor_theme}\n`);
                 writer.write(`${content.projects}\n`);
                 writer.write("\n");
-                writer.write(`${content.local_libs}\n`);
+                writer.write(`${projectsPath}\n`); // content.local_libs
                 writer.write(`${content.ref_sys}\n`);
                 writer.write("\n");
                 writer.write(`${content.user_initial}\n`);
                 writer.write(`${content.user_full_name}\n`);
-                writer.write(`${content.project_path}\n`);
+                writer.write(`${localLibsPath}\n`); // content.project_path
                 writer.write("\n");
                 writer.write(`${content.file_diff}\n`);
                 writer.write("\n");

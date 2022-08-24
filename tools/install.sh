@@ -78,7 +78,7 @@ npm install --production
 
 echo ""
 echo ">> Linking gtm-utils ..."
-npm link
+npm install -g
 
 echo ""
 echo ">> Removing gtm-utils.zip ..."

@@ -1,11 +1,11 @@
 # Getting started
 
-## How to install _gtm-utils_ application
+## install _gtm-utils_ application
 
 Follow below steps to install `gtm-utils` on your computer:
 
 1. Install [chocolatey](https://chocolatey.org/install).(if not installed on your computer)
-2. Once _chocolatey_ installed, open a cygwin window in _Administrative_ mode (Run as administrator).
+2. Once _chocolatey_ installed, open a ***cygwin*** window in _Administrative_ mode (Run as administrator).
 3. Navigate to a directory where you want to store `install.sh` script file. (You can create a new directory)
 4. Run the following command:
 
@@ -20,7 +20,26 @@ Follow below steps to install `gtm-utils` on your computer:
 6. Wait a few seconds for the command to complete.
 7. If you don't see any errors, you are ready to use _gtm-utils_! Open another cygwin window and type `gtm-utils` or `gtm-utls --version`, or see below sections for usage instructions.
 
-## How to run `setup` command
+## uninstall _gtm-utils_ application
+
+Follow below steps to uninstall `gtm-utils` from your computer:
+
+1. Open a **_cygwin_** window in _Administrative_ mode (Run as administrator).
+2. Navigate to a directory where you want to store `uninstall.sh` script file.
+3. Run the following command:
+
+   > wget https://github.com/abhinath84/gtm-utils/releases/download/V1.0.0/uninstall.sh
+
+   It will download `uninstall.sh` in current directory.
+
+4. Run the following command to uninstall _gtm-utils_ application.
+
+   > sh ./uninstall.sh
+
+5. Wait a few seconds for the command to complete.
+6. If you don't see any errors, _gtm-utils_ application is uninstalled successfully!
+
+## run `setup` command
 
 ### Pre-requisite
 
