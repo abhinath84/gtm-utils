@@ -1,14 +1,12 @@
 #!/usr/bin/env node
-
 "use strict";
-
-import { gtm } from "../lib/core/gtm.js";
+import { engine } from "../lib/core/engine.js";
 import { errorHandler } from "../lib/core/errors.js";
-
 // load command api & start parsing them.
-gtm
-  .load().then(() => {
+engine
+    .load().then(() => {
     // start evaluating commands.
-    gtm.parse();
-  })
-  .catch(errorHandler);
+    engine.parse();
+})
+    .catch(errorHandler);
+//# sourceMappingURL=main.js.map

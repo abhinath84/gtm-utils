@@ -1,0 +1,64 @@
+{
+    "name": "gtm-utils",
+    "version": "1.0.5",
+    "description": "CLI application for uigtm",
+    "type": "module",
+    "preferGlobal": true,
+    "bin": {
+        "gtm-utils": "./app/cli/src/bin/main.js"
+    },
+    "main": "./app/cli/src/bin/main.js",
+    "scripts": {
+        "lint": "npx eslint .",
+        "lint:fix": "npx eslint --fix .",
+        "lint:gitlab": "set ESLINT_CODE_QUALITY_REPORT=eslint-gitlab-report.json && npx eslint --format gitlab .",
+        "docs": "jsdoc -p -c ./jsdoc/config.json",
+        "serve": "node --no-warnings=ExperimentalWarning ./app/cli/src/bin/main.js",
+        "prebuild": "rimraf ./app",
+        "build": "npx tsc -p ./tsconfig.json",
+        "postbuild": "npm run pkg:rma && npm run pkg:cp && npm run pkg:zip && npm run pkg:rm",
+        "watch": "npx tsc -w -p ./tsconfig.json",
+        "pkg:rma": "rimraf ./package/*",
+        "pkg:rm": "cd ./package && rimraf app package.json package-lock.json",
+        "pkg:cp": "copyfiles -a ./app/**/* ./package.json ./package/",
+        "pkg:zip": "cd ./package && zip -r gtm-utils.zip *",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "chalk": "^5.0.1",
+        "commander": "^9.0.0",
+        "dotenv": "^16.0.0",
+        "figlet": "^1.5.2",
+        "inquirer": "^9.1.0",
+        "npmlog": "^6.0.0"
+    },
+    "devDependencies": {
+        "@types/figlet": "^1.5.4",
+        "@types/inquirer": "^9.0.0",
+        "@types/node": "^16.7.10",
+        "@types/npmlog": "^4.1.4",
+        "@typescript-eslint/eslint-plugin": "^5.14.0",
+        "@typescript-eslint/parser": "^5.14.0",
+        "copyfiles": "^2.4.1",
+        "docdash": "^1.2.0",
+        "eslint": "^8.2.0",
+        "eslint-config-airbnb-base": "^15.0.0",
+        "eslint-formatter-gitlab": "^3.0.0",
+        "eslint-plugin-import": "^2.25.2",
+        "jsdoc": "^4.0.0",
+        "minami": "^1.2.3",
+        "prettier": "^2.5.1",
+        "rimraf": "^3.0.2",
+        "tslib": "^2.3.1",
+        "typescript": "^4.5.5"
+    },
+    "bugs": {
+        "url": "https://github.com/abhinath84/gtm-utils/issues/new"
+    },
+    "keywords": [
+        "cli",
+        "uigtm"
+    ],
+    "author": "Abhishek Nath",
+    "license": "MIT"
+}

@@ -1,8 +1,9 @@
 "use strict";
 import log from "npmlog";
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const pkg = require("../../../../package.json");
+// import { createRequire } from "module";
+// const require = createRequire(import.meta.url);
+// const pkg = require("../../../package.json");
+import { Utils } from "../utils/utility.js";
 class UsageError extends Error {
     constructor(message) {
         super(message);
@@ -22,6 +23,7 @@ function errorHandler(err) {
         log.error("" /* err.name */, err.message);
         process.exit(1);
     }
+    const pkg = Utils.packageJson();
     // err.message && log.error(err.message);
     if (err.stack) {
         log.error("", err.stack);

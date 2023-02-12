@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import chalk from "chalk";
 import figlet from "figlet";
+// import project related modules.
 import { parseProgram } from "./commands.js";
 import { Utils } from "../utils/utility.js";
 import { errorHandler } from "./errors.js";
@@ -11,20 +12,21 @@ import { loadModule } from "../utils/esm.js";
 // const __filename = Utils.filename();
 const __dirname = Utils.dirname(import.meta.url);
 const cmdDirs = path.join(__dirname, "../cmd");
+const pkg = Utils.packageJson();
 const api = {};
 const cli = {};
 // It makes sense to ensure that lounger was bootstrapped properly,
 // especially for programmatic use.
 // To keep track of the async bootstrapping `status`, we set `lounger.loaded` to `false`.
-export const gtm = {
+export const engine = {
     isLoaded: false,
     version: Utils.packageJson().version,
 };
 function showFiglet() {
     // clear();
     // TODO: pad according to shell window width.
-    const figletText = figlet.textSync("   UIGTM-UTILS", { horizontalLayout: "full" });
-    Utils.display(chalk.cyan(`${figletText}v${gtm.version}`));
+    const figletText = figlet.textSync(`   ${pkg.name.toUpperCase()}`, { horizontalLayout: "full" });
+    Utils.display(chalk.cyan(`${figletText}v${engine.version}`));
     Utils.display("\n");
 }
 // TODO: replace value: any to value: Object|Function
@@ -71,9 +73,9 @@ function loadCallback() {
             else {
                 loadCmds(files)
                     .then((loaded) => {
-                    gtm.isLoaded = loaded;
+                    engine.isLoaded = loaded;
                     if (loaded)
-                        return resolve(gtm);
+                        return resolve(engine);
                     return reject(new TypeError("Fail to load command modules."));
                 })
                     .catch(reject);
@@ -82,36 +84,37 @@ function loadCallback() {
     });
 }
 function parseCallback() {
+    showFiglet();
     return parseProgram();
 }
 function actionCallback(cmd, options) {
-    showFiglet();
+    // showFiglet();
     // check
     if (cli[cmd]) {
         cli[cmd].apply(null, [options]).catch(errorHandler);
     }
     else {
-        throw new TypeError(`${cmd} is not present in 'gtm' module.`);
+        throw new TypeError(`${cmd} is not present in 'engine' module.`);
     }
 }
-// Assigning functions to gtm object.
-gtm.load = loadCallback;
-gtm.parse = parseCallback;
-gtm.action = actionCallback;
-Object.defineProperty(gtm, "commands", {
+// Assigning functions to engine object.
+engine.load = loadCallback;
+engine.parse = parseCallback;
+engine.action = actionCallback;
+Object.defineProperty(engine, "commands", {
     get: () => {
-        if (gtm.isLoaded === false) {
-            throw new Error("run gtm.load before");
+        if (engine.isLoaded === false) {
+            throw new Error("run engine.load before");
         }
         return api;
     },
 });
-Object.defineProperty(gtm, "cli", {
+Object.defineProperty(engine, "cli", {
     get: () => {
-        if (gtm.isLoaded === false) {
-            throw new Error("run gtm.load before");
+        if (engine.isLoaded === false) {
+            throw new Error("run engine.load before");
         }
         return cli;
     },
 });
-//# sourceMappingURL=gtm.js.map
+//# sourceMappingURL=engine.js.map

@@ -5,9 +5,11 @@ import fs from "fs";
 import path from "path";
 import chalk from "chalk";
 import figlet from "figlet";
+import { Command } from "commander";
+
+import pack from "../../../package.json" assert {type: "json"};
 
 // import project related modules.
-import { Command } from "commander";
 import { parseProgram } from "./commands.js";
 import { Utils } from "../utils/utility.js";
 import { errorHandler } from "./errors.js";
@@ -18,9 +20,11 @@ const __dirname = Utils.dirname(import.meta.url);
 
 const cmdDirs = path.join(__dirname, "../cmd");
 
-interface GTM {
+const pkg = Utils.packageJson();
+
+interface Engine {
   isLoaded: boolean;
-  readonly version: number;
+  readonly version: string;
   [key: string]: any;
 }
 
@@ -30,7 +34,7 @@ const cli: any = {};
 // It makes sense to ensure that lounger was bootstrapped properly,
 // especially for programmatic use.
 // To keep track of the async bootstrapping `status`, we set `lounger.loaded` to `false`.
-export const gtm: GTM = {
+export const engine: Engine = {
   isLoaded: false,
   version: Utils.packageJson().version,
 };
@@ -38,8 +42,8 @@ export const gtm: GTM = {
 function showFiglet() {
   // clear();
   // TODO: pad according to shell window width.
-  const figletText = figlet.textSync("   UIGTM-UTILS", { horizontalLayout: "full" });
-  Utils.display(chalk.cyan(`${figletText}v${gtm.version}`));
+  const figletText = figlet.textSync(`   ${pkg.name.toUpperCase()}`, { horizontalLayout: "full" });
+  Utils.display(chalk.cyan(`${figletText}v${engine.version}`));
   Utils.display("\n");
 }
 
@@ -85,7 +89,7 @@ function loadCmds(files: string[]): Promise<boolean> {
   return Promise.reject(new TypeError("Unable to load commands."));
 }
 
-function loadCallback(): Promise<GTM> {
+function loadCallback(): Promise<Engine> {
   return new Promise((resolve, reject) => {
     fs.readdir(cmdDirs, (err, files) => {
       if (err) {
@@ -93,9 +97,9 @@ function loadCallback(): Promise<GTM> {
       } else {
         loadCmds(files)
           .then((loaded) => {
-            gtm.isLoaded = loaded;
+            engine.isLoaded = loaded;
 
-            if (loaded) return resolve(gtm);
+            if (loaded) return resolve(engine);
             return reject(new TypeError("Fail to load command modules."));
           })
           .catch(reject);
@@ -105,39 +109,41 @@ function loadCallback(): Promise<GTM> {
 }
 
 function parseCallback(): Command {
+  showFiglet();
+
   return parseProgram();
 }
 
 function actionCallback(cmd: string, options: any): void {
-  showFiglet();
+  // showFiglet();
 
   // check
   if (cli[cmd]) {
     cli[cmd].apply(null, [options]).catch(errorHandler);
   } else {
-    throw new TypeError(`${cmd} is not present in 'gtm' module.`);
+    throw new TypeError(`${cmd} is not present in 'engine' module.`);
   }
 }
 
-// Assigning functions to gtm object.
-gtm.load = loadCallback;
-gtm.parse = parseCallback;
-gtm.action = actionCallback;
+// Assigning functions to engine object.
+engine.load = loadCallback;
+engine.parse = parseCallback;
+engine.action = actionCallback;
 
-Object.defineProperty(gtm, "commands", {
+Object.defineProperty(engine, "commands", {
   get: () => {
-    if (gtm.isLoaded === false) {
-      throw new Error("run gtm.load before");
+    if (engine.isLoaded === false) {
+      throw new Error("run engine.load before");
     }
 
     return api;
   },
 });
 
-Object.defineProperty(gtm, "cli", {
+Object.defineProperty(engine, "cli", {
   get: () => {
-    if (gtm.isLoaded === false) {
-      throw new Error("run gtm.load before");
+    if (engine.isLoaded === false) {
+      throw new Error("run engine.load before");
     }
 
     return cli;

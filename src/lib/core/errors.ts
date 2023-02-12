@@ -1,10 +1,12 @@
 "use strict";
 
 import log from "npmlog";
-import { createRequire } from "module";
+// import { createRequire } from "module";
 
-const require = createRequire(import.meta.url);
-const pkg = require("../../../../package.json");
+// const require = createRequire(import.meta.url);
+// const pkg = require("../../../package.json");
+
+import { Utils } from "../utils/utility.js";
 
 class UsageError extends Error {
   constructor(message: string) {
@@ -32,6 +34,8 @@ function errorHandler(err: Error): void {
     log.error("" /* err.name */, err.message);
     process.exit(1);
   }
+
+  const pkg = Utils.packageJson();
 
   // err.message && log.error(err.message);
   if (err.stack) {

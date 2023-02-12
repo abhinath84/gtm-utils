@@ -6,9 +6,10 @@ import { fileURLToPath } from "url";
 import { createRequire } from "module";
 import { accessSync, constants } from "fs";
 
-// import pkg from "../../../package.json";
+// import pkg from "../../../package.json" assert {type: "json"};
 
 const require = createRequire(import.meta.url);
+const pkg = require("../../../package.json");
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -128,8 +129,7 @@ const Utils = {
     return name;
   },
 
-  packageJson(): any {
-    const pkg = require("../../../../package.json");
+  packageJson() {
     return pkg;
   },
 
@@ -143,7 +143,7 @@ const Utils = {
   cmdUsageHelpMsg(name: string): string {
     if (name) {
       return `Please check Usage for '${name}' command using below:
-$ gtm-utils help ${name}`;
+$ ${pkg.name} help ${name}`;
     }
     return "";
   },

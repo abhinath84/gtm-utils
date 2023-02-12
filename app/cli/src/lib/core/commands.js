@@ -2,7 +2,7 @@
 // import standard & node_modules
 import { Command } from "commander";
 // import project modules
-import { gtm } from "./gtm.js";
+import { engine } from "./engine.js";
 import { Utils } from "../utils/utility.js";
 const pkg = Utils.packageJson();
 // function collect(val: string, collection: string[]): string[] {
@@ -12,30 +12,30 @@ const pkg = Utils.packageJson();
 // add commands.
 const program = new Command();
 program
-    .name("gtm-utils")
+    .name(pkg.name)
     .version(pkg.version)
     .description("Command-line interface for UIGTM application");
 // Setup uigtm in remote PC using uigtm project of this PC
 program
     .command("setup")
     .description("Setup uigtm in remote computer using uigtm settings of this computer")
-    .action((options) => gtm.action("setup", options));
+    .action((options) => engine.action("setup", options));
 // Export uigtm projects on this PC in json format
 program
     .command("export")
     .description("Export uigtm projects and it's settings")
-    .action((options) => gtm.action("export", options));
+    .action((options) => engine.action("export", options));
 // Import uigtm projects on this PC
 program
     .command("import")
     .description("Import uigtm projects and it's settings")
-    .action((options) => gtm.action("import", options));
+    .action((options) => engine.action("import", options));
 // Remove uigtm projects on this PC
 program
     .command("remove")
     .description("Remove specified directories from uigtm projects")
     // .option("-rs, --ref-system <refsystem>", "Reference system path for new UIGTM project")
-    .action((options) => gtm.action("remove", options));
+    .action((options) => engine.action("remove", options));
 export function parseProgram() {
     return (program.parse(process.argv));
 }
