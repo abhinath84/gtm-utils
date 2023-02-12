@@ -7,7 +7,7 @@ import os from "os";
 
 import { SetupInputs, ImportInput, ExportInput } from "../utils/types.js";
 // import { ReadFileMiddleware, ReadLineMiddleware, Stream } from "../utils/istream.js";
-import { GTMRead, GTMWrite, ReadMiddleware, GTMStream } from "./gtmstream.js";
+import { GTMRead, GTMWrite, GTMStream, ReadMiddleware, ReadFileMiddleware } from "./gtmstream.js";
 import { Utils } from "../utils/utility.js";
 import { UsageError } from "../core/errors.js";
 
@@ -53,6 +53,8 @@ export class GTMSimulator {
   private mLocalLibsPath: string;
   private mHomeReadPath: string;
   private mHomeWritePath: string;
+  private mCopyFrom: string;
+  private mCopyTo: string;
   private mCopyErrors: Error[];
 
   constructor() {
@@ -62,6 +64,8 @@ export class GTMSimulator {
     this.mLocalLibsPath = "";
     this.mHomeReadPath = "";
     this.mHomeWritePath = "";
+    this.mCopyFrom = "";
+    this.mCopyTo = "";
     this.mCopyErrors = [];
 
     this.init();
@@ -90,16 +94,15 @@ export class GTMSimulator {
 
     Utils.display("");
     // copy projects
-    const localProjectsPath = `\\\\${os.hostname()}\\projects`;
-    const remoteProjectsPath = `\\\\${input.hostname}\\projects`;
-    const projects = this.find(".gtconfig")?.content?.projects.split(" ");
+    this.mCopyFrom = `\\\\${os.hostname()}\\projects`;
+    this.mCopyTo = `\\\\${input.hostname}\\projects`;
     const options = {
       copyX86e: input.gtmInput.copyX86e,
       copyRun: input.gtmInput.copyRun,
       copyTestrun: input.gtmInput.copyTestrun,
       copyData: input.gtmInput.copyData,
     };
-    await this.copy(localProjectsPath, remoteProjectsPath, projects, options);
+    await this.copyProjects(options);
 
     Utils.display("");
     // write to remote home directory
@@ -159,53 +162,45 @@ export class GTMSimulator {
     return Promise.resolve();
   }
 
-  import(input: ImportInput): Promise<void> {
-    // // TODO: validate input's access.
-    // if (process.env.HOME === undefined || process.env.HOME.length <= 0) {
-    //   throw new UsageError("local HOME environment variable is not set.");
-    // }
+  async import(input: ImportInput): Promise<void> {
+    // TODO: validate input's access.
+    if (process.env.HOME === undefined || process.env.HOME.length <= 0) {
+      throw new UsageError("local HOME environment variable is not set.");
+    }
 
-    // // TODO: replace '\\' with path.separator()
-    // const remoteHomeDir = `\\\\${input.hostname}\\${input.homeDir}`;
-    // if (!Utils.FilesystemStream.writable(remoteHomeDir)) {
-    //   throw new UsageError(`${remoteHomeDir} doesn't have write permission.`);
-    // }
+    const start = new Date();
+    this.mHomeReadPath = process.env.HOME;
+    this.mHomeWritePath = process.env.HOME;
+    this.mProjectsPath = input.gtmInput.projectPath; // read it from uigtm if exists
+    this.mLocalLibsPath = input.gtmInput.localLibsPath; // read it from uigtm if exists
 
-    // this.mHomeReadPath = process.env.HOME;
-    // this.mHomeWritePath = remoteHomeDir;
-    // this.mProjectsPath = input.gtmInput.projectPath;
-    // this.mLocalLibsPath = input.gtmInput.localLibsPath;
+    // read from local home directory
+    await this.readImportFile(input.source);
+    // Utils.display(this.mGTMInfos);
 
-    // const start = new Date();
-    // // read from local home directory
-    // await this.readFromHome();
+    // copy projects
+    this.mCopyTo = `\\\\${os.hostname()}\\projects`;
+    const options = {
+      copyX86e: input.gtmInput.copyX86e,
+      copyRun: input.gtmInput.copyRun,
+      copyTestrun: input.gtmInput.copyTestrun,
+      copyData: input.gtmInput.copyData,
+    };
 
-    // Utils.display("");
-    // // copy projects
-    // const localProjectsPath = `\\\\${os.hostname()}\\projects`;
-    // const remoteProjectsPath = `\\\\${input.hostname}\\projects`;
-    // const projects = this.find(".gtconfig")?.content?.projects.split(" ");
-    // const options = {
-    //   copyX86e: input.gtmInput.copyX86e,
-    //   copyRun: input.gtmInput.copyRun,
-    //   copyTestrun: input.gtmInput.copyTestrun,
-    //   copyData: input.gtmInput.copyData,
-    // };
-    // await this.copy(localProjectsPath, remoteProjectsPath, projects, options);
+    Utils.display("");
+    await this.copyProjects(options);
 
-    // Utils.display("");
-    // // write to remote home directory
-    // await this.writeToHome();
+    // write to remote home directory
+    Utils.display("");
+    await this.writeToHome();
 
-    // Utils.display("");
-    // // display duration
-    // const end = new Date();
-    // displayDuration(start, end);
+    // display duration
+    Utils.display("");
+    const end = new Date();
+    displayDuration(start, end);
 
-    // Utils.display("");
-    // return Promise.resolve(`Setup UIGTM is Completed on "${input.hostname}"!`);
-        
-    Utils.display("In-progress !!!");
+    Utils.display("");
+    Utils.display("Import completed ...");
 
     return (Promise.resolve());
   }
@@ -267,8 +262,8 @@ export class GTMSimulator {
   private readConfigFile(): Promise<void> {
     const filename = ".gtconfig";
 
-    const projectsPath = this.mProjectsPath;
-    const localLibsPath = this.mLocalLibsPath;
+    // const projectsPath = this.mProjectsPath;
+    // const localLibsPath = this.mLocalLibsPath;
     const middleware: ReadMiddleware = {
       content: {},
       type: "line",
@@ -286,7 +281,7 @@ export class GTMSimulator {
             this.content.projects = content;
             break;
           case 5:
-            this.content.local_libs = localLibsPath;
+            this.content.local_libs = content;
             break;
           case 6:
             this.content.ref_sys = content;
@@ -298,7 +293,7 @@ export class GTMSimulator {
             this.content.user_full_name = content;
             break;
           case 10:
-            this.content.project_path = projectsPath;
+            this.content.project_path = content;
             break;
           case 12:
             this.content.file_diff = content;
@@ -563,6 +558,189 @@ export class GTMSimulator {
     return GTMStream.read(rdObj);
   }
 
+  private validateImportObj(obj: any): boolean {
+    // validate "hostname"
+    if (typeof obj.hostname === "undefined") {
+      throw new UsageError("Invalid import file. 'hostname' variable is missing");
+    }
+
+    // validate ".gtconfig"
+    if (typeof obj[".gtconfig"] !== "undefined") {
+      if (typeof obj[".gtconfig"].win_pref === "undefined") {
+        throw new UsageError("Invalid import file. '.gtconfig > win_pref' variable is missing");
+      }
+
+      if (typeof obj[".gtconfig"].editor_theme === "undefined") {
+        throw new UsageError("Invalid import file. '.gtconfig > editor_theme' variable is missing");
+      }
+
+      if (typeof obj[".gtconfig"].projects === "undefined") {
+        throw new UsageError("Invalid import file. '.gtconfig > projects' variable is missing");
+      }
+
+      if (typeof obj[".gtconfig"].local_libs === "undefined") {
+        throw new UsageError("Invalid import file. '.gtconfig > local_libs' variable is missing");
+      }
+
+      if (typeof obj[".gtconfig"].ref_sys === "undefined") {
+        throw new UsageError("Invalid import file. '.gtconfig > ref_sys' variable is missing");
+      }
+
+      if (typeof obj[".gtconfig"].user_initial === "undefined") {
+        throw new UsageError("Invalid import file. '.gtconfig > user_initial' variable is missing");
+      }
+
+      if (typeof obj[".gtconfig"].user_full_name === "undefined") {
+        throw new UsageError("Invalid import file. '.gtconfig > user_full_name' variable is missing");
+      }
+
+      if (typeof obj[".gtconfig"].project_path === "undefined") {
+        throw new UsageError("Invalid import file. '.gtconfig > project_path' variable is missing");
+      }
+
+      if (typeof obj[".gtconfig"].file_diff === "undefined") {
+        throw new UsageError("Invalid import file. '.gtconfig > file_diff' variable is missing");
+      }
+
+      if (typeof obj[".gtconfig"].zero === "undefined") {
+        throw new UsageError("Invalid import file. '.gtconfig > zero' variable is missing");
+      }
+    } else {
+      throw new UsageError("Invalid import file. '.gtconfig' variable is missing");
+    }
+
+    // validate ".gtconfig.json"
+    if (typeof obj[".gtconfig.json"] !== "undefined") {
+      if (typeof obj[".gtconfig.json"].local_libraries === "undefined") {
+        throw new UsageError("Invalid import file. '.gtconfig.json > local_libraries' variable is missing");
+      }
+
+      if (typeof obj[".gtconfig.json"].bg_comm_check === "undefined") {
+        throw new UsageError("Invalid import file. '.gtconfig.json > bg_comm_check' variable is missing");
+      }
+
+      if (typeof obj[".gtconfig.json"].ign_work_files === "undefined") {
+        throw new UsageError("Invalid import file. '.gtconfig.json > ign_work_files' variable is missing");
+      }
+
+      if (typeof obj[".gtconfig.json"].recent_ref_sys === "undefined") {
+        throw new UsageError("Invalid import file. '.gtconfig.json > recent_ref_sys' variable is missing");
+      }
+    } else {
+      throw new UsageError("Invalid import file. '.gtconfig.json' variable is missing");
+    }
+
+    // validate ".gtprj"
+    if (typeof obj[".gtprj"] !== "undefined") {
+      if (typeof obj[".gtprj"].projects === "undefined") {
+        throw new UsageError("Invalid import file. '.gtprj > projects' variable is missing");
+      }
+    } else {
+      throw new UsageError("Invalid import file. '.gtprj' variable is missing");
+    }
+
+    // validate ".gt_open_prj_flt"
+    if (typeof obj[".gt_open_prj_flt"] !== "undefined") {
+      if (typeof obj[".gt_open_prj_flt"].data === "undefined") {
+        throw new UsageError("Invalid import file. '.gt_open_prj_flt > data' variable is missing");
+      }
+    } else {
+      throw new UsageError("Invalid import file. '.gt_open_prj_flt' variable is missing");
+    }
+
+    // validate ".gt_proj_flt"
+    if (typeof obj[".gt_proj_flt"] !== "undefined") {
+      if (typeof obj[".gt_proj_flt"].data === "undefined") {
+        throw new UsageError("Invalid import file. '.gt_proj_flt > data' variable is missing");
+      }
+    } else {
+      throw new UsageError("Invalid import file. '.gt_proj_flt' variable is missing");
+    }
+
+    // validate ".gtdeftags"
+    if (typeof obj[".gtdeftags"] !== "undefined") {
+      if (typeof obj[".gtdeftags"].data === "undefined") {
+        throw new UsageError("Invalid import file. '.gtdeftags > data' variable is missing");
+      }
+    } else {
+      throw new UsageError("Invalid import file. '.gtdeftags' variable is missing");
+    }
+
+    // validate ".gtdeftgts"
+    if (typeof obj[".gtdeftgts"] !== "undefined") {
+      if (typeof obj[".gtdeftgts"].data === "undefined") {
+        throw new UsageError("Invalid import file. '.gtdeftgts > data' variable is missing");
+      }
+    } else {
+      throw new UsageError("Invalid import file. '.gtdeftgts' variable is missing");
+    }
+
+    // validate ".gtlntfilt"
+    if (typeof obj[".gtlntfilt"] !== "undefined") {
+      if (typeof obj[".gtlntfilt"].data === "undefined") {
+        throw new UsageError("Invalid import file. '.gtlntfilt > data' variable is missing");
+      }
+    } else {
+      throw new UsageError("Invalid import file. '.gtlntfilt' variable is missing");
+    }
+
+    // validate ".gtm_cshrc"
+    if (typeof obj[".gtm_cshrc"] !== "undefined") {
+      if (typeof obj[".gtm_cshrc"].data === "undefined") {
+        throw new UsageError("Invalid import file. '.gtm_cshrc > data' variable is missing");
+      }
+    } else {
+      throw new UsageError("Invalid import file. '.gtm_cshrc' variable is missing");
+    }
+
+    // validate ".gtprj_types"
+    if (typeof obj[".gtprj_types"] !== "undefined") {
+      if (typeof obj[".gtprj_types"].data === "undefined") {
+        throw new UsageError("Invalid import file. '.gtprj_types > data' variable is missing");
+      }
+    } else {
+      throw new UsageError("Invalid import file. '.gtprj_types' variable is missing");
+    }
+
+    return (true);
+  }
+
+  private readImportFile(filename: string): Promise<void> {
+    Utils.display(`Reading ${filename} ...`);
+
+    const middleware: ReadFileMiddleware = (content: string): void => {
+      const jsonObj = JSON.parse(content);
+
+      // validate import object
+      if (this.validateImportObj(jsonObj)) {
+        Object.keys(jsonObj).forEach((key) => {
+          if (key === "hostname") {
+            // get remote host name
+            this.mCopyFrom = `\\\\${jsonObj.hostname}\\projects`;
+          } else {
+            this.insert({ filename: key, content: jsonObj[key] });
+          }
+        });
+      }
+    };
+
+    return GTMStream.readFile(filename, middleware);
+  }
+
+  private copyProjects(options: any): Promise<void> {
+    if (this.mCopyFrom.length <= 0) {
+      throw new TypeError("Source path of projects to copy is missing");
+    }
+
+    if (this.mCopyTo.length <= 0) {
+      throw new TypeError("Destination path of projects to paste is missing");
+    }
+
+    // copy projects
+    const projects = this.find(".gtconfig")?.content?.projects.split(" ");
+    return (this.copy(this.mCopyFrom, this.mCopyTo, projects, options));
+  }
+
   private async copy(source: string, destination: string, projects: string[], options: any): Promise<void> {
     // validate inputs
     if (source.length > 0 && destination.length > 0 && projects.length > 0) {
@@ -595,7 +773,6 @@ export class GTMSimulator {
 
       // write copy error to copy.err
       this.writeCopyError();
-      // Utils.display(this.mCopyErrors);
 
       return Promise.resolve();
     }
@@ -682,6 +859,9 @@ export class GTMSimulator {
   private writeConfigFile(): Promise<void> {
     const filename = ".gtconfig";
 
+    const projectsPath = this.mProjectsPath;
+    const localLibsPath = this.mLocalLibsPath;
+
     const obj: GTMWrite = {
       file: this.resolveWriteHome(filename),
       middleware: (writer: fs.WriteStream): void => {
@@ -692,12 +872,12 @@ export class GTMSimulator {
         writer.write(`${content.editor_theme}\n`);
         writer.write(`${content.projects}\n`);
         writer.write("\n");
-        writer.write(`${content.local_libs}\n`);
+        writer.write(`${projectsPath}\n`); // content.local_libs
         writer.write(`${content.ref_sys}\n`);
         writer.write("\n");
         writer.write(`${content.user_initial}\n`);
         writer.write(`${content.user_full_name}\n`);
-        writer.write(`${content.project_path}\n`);
+        writer.write(`${localLibsPath}\n`); // content.project_path
         writer.write("\n");
         writer.write(`${content.file_diff}\n`);
         writer.write("\n");
